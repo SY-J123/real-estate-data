@@ -15,7 +15,10 @@
       "Bash(gh secret:*)",
       "Bash(gh workflow:*)",
       "Bash(gh api:*)",
-      "Bash(gh run:*)"
+      "Bash(gh run:*)",
+      "Bash(python3 -c ':*)",
+      "Bash(python -c ':*)",
+      "Bash(py -3 -c ':*)"
     ]
   }
 }

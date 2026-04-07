@@ -225,11 +225,15 @@ def upsert_to_supabase(rows: list[dict]) -> None:
     """Supabase에 데이터를 저장한다."""
     sb = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-    # 배치 단위로 upsert (500건씩)
+    # 기존 데이터 삭제 후 새로 삽입 (중복 방지)
+    print("  기존 데이터 삭제 중...")
+    sb.table("transactions").delete().neq("id", 0).execute()
+
+    # 배치 단위로 insert (500건씩)
     batch_size = 500
     for i in range(0, len(rows), batch_size):
         batch = rows[i : i + batch_size]
-        sb.table("transactions").upsert(batch, on_conflict="gu,dong,apt_name,area,floor,deal_date,deal_type").execute()
+        sb.table("transactions").insert(batch).execute()
         print(f"  저장: {i + len(batch)}/{len(rows)}")
 
     # 메타데이터 업데이트
