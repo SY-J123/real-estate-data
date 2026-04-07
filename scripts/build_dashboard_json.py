@@ -30,6 +30,8 @@ def load_transactions() -> pd.DataFrame:
     df["price"] = pd.to_numeric(df["price"], errors="coerce")
     df["area"] = pd.to_numeric(df["area"], errors="coerce")
     df = df.dropna(subset=["deal_date", "price", "area"])
+    df = df[df["area"] > 0]
+    df["price_per_pyeong"] = df["price"] / df["area"] * 3.3
     return df
 
 
@@ -63,18 +65,18 @@ def compute_district_summary(
     jeonse_cur = df_cur[df_cur["deal_type"] == "전세"]
     jeonse_prev = df_prev[df_prev["deal_type"] == "전세"]
 
-    # 매매 집계
+    # 매매 집계 (평당가 기준)
     cur_agg = trades_cur.groupby("gu").agg(
-        avgPrice=("price", "mean"),
-        transactionCount=("price", "count"),
+        avgPrice=("price_per_pyeong", "mean"),
+        transactionCount=("price_per_pyeong", "count"),
     )
     prev_agg = trades_prev.groupby("gu").agg(
-        prevAvgPrice=("price", "mean"),
+        prevAvgPrice=("price_per_pyeong", "mean"),
     )
 
-    # 전세 집계
-    j_cur_agg = jeonse_cur.groupby("gu")["price"].mean().rename("avgJeonsePrice")
-    j_prev_agg = jeonse_prev.groupby("gu")["price"].mean().rename("prevAvgJeonsePrice")
+    # 전세 집계 (평당가 기준)
+    j_cur_agg = jeonse_cur.groupby("gu")["price_per_pyeong"].mean().rename("avgJeonsePrice")
+    j_prev_agg = jeonse_prev.groupby("gu")["price_per_pyeong"].mean().rename("prevAvgJeonsePrice")
 
     merged = cur_agg.join(prev_agg, how="left").join(j_cur_agg, how="left").join(j_prev_agg, how="left")
     merged = merged.fillna(0)
@@ -112,14 +114,14 @@ def compute_dong_summary(
     jeonse_prev = df_prev[df_prev["deal_type"] == "전세"]
 
     cur_agg = trades_cur.groupby(["gu", "dong"]).agg(
-        avgPrice=("price", "mean"),
-        transactionCount=("price", "count"),
+        avgPrice=("price_per_pyeong", "mean"),
+        transactionCount=("price_per_pyeong", "count"),
     )
     prev_agg = trades_prev.groupby(["gu", "dong"]).agg(
-        prevAvgPrice=("price", "mean"),
+        prevAvgPrice=("price_per_pyeong", "mean"),
     )
-    j_cur_agg = jeonse_cur.groupby(["gu", "dong"])["price"].mean().rename("avgJeonsePrice")
-    j_prev_agg = jeonse_prev.groupby(["gu", "dong"])["price"].mean().rename("prevAvgJeonsePrice")
+    j_cur_agg = jeonse_cur.groupby(["gu", "dong"])["price_per_pyeong"].mean().rename("avgJeonsePrice")
+    j_prev_agg = jeonse_prev.groupby(["gu", "dong"])["price_per_pyeong"].mean().rename("prevAvgJeonsePrice")
 
     merged = cur_agg.join(prev_agg, how="left").join(j_cur_agg, how="left").join(j_prev_agg, how="left")
     merged = merged.fillna(0)
@@ -157,8 +159,8 @@ def compute_monthly_avg(df: pd.DataFrame, months: int) -> list[dict]:
 
     trades["month"] = trades["deal_date"].dt.strftime("%Y-%m")
     monthly = trades.groupby("month").agg(
-        avgPrice=("price", "mean"),
-        count=("price", "count"),
+        avgPrice=("price_per_pyeong", "mean"),
+        count=("price_per_pyeong", "count"),
     ).sort_index()
 
     return [
