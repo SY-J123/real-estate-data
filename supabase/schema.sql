@@ -17,6 +17,11 @@ CREATE TABLE IF NOT EXISTS transactions (
   created_at    TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- 중복 방지용 unique 제약
+ALTER TABLE transactions
+  ADD CONSTRAINT uq_transaction
+  UNIQUE (gu, dong, apt_name, area, floor, deal_date, deal_type, price);
+
 -- 인덱스
 CREATE INDEX idx_transactions_gu ON transactions (gu);
 CREATE INDEX idx_transactions_dong ON transactions (gu, dong);

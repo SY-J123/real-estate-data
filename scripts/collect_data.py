@@ -222,25 +222,45 @@ def collect_all(months_back: int = 12) -> list[dict]:
 
 
 def upsert_to_supabase(rows: list[dict]) -> None:
-    """Supabase에 데이터를 저장한다."""
+    """Supabase에 데이터를 누적 저장한다 (중복 무시)."""
     sb = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-    # 기존 데이터 삭제 후 새로 삽입 (중복 방지)
-    print("  기존 데이터 삭제 중...")
-    sb.table("transactions").delete().neq("id", 0).execute()
-
-    # 배치 단위로 insert (500건씩)
+    # 배치 단위로 upsert (500건씩, 중복은 무시)
     batch_size = 500
+    saved = 0
     for i in range(0, len(rows), batch_size):
         batch = rows[i : i + batch_size]
-        sb.table("transactions").insert(batch).execute()
-        print(f"  저장: {i + len(batch)}/{len(rows)}")
+        try:
+            sb.table("transactions").upsert(
+                batch,
+                on_conflict="gu,dong,apt_name,area,floor,deal_date,deal_type,price",
+                ignore_duplicates=True,
+            ).execute()
+            saved += len(batch)
+        except Exception as e:
+            print(f"  [WARN] 배치 저장 실패 ({i}~{i+len(batch)}): {e}")
+        print(f"  저장: {saved}/{len(rows)}")
 
     # 메타데이터 업데이트
     sb.table("metadata").upsert({
         "key": "last_updated",
         "value": datetime.now().isoformat(),
     }, on_conflict="key").execute()
+
+    # DB 용량 모니터링
+    try:
+        result = sb.rpc("get_db_size").execute()
+        if result.data:
+            print(f"\n[DB 용량] {result.data}")
+    except Exception:
+        pass
+
+    # 총 row 수 확인
+    try:
+        result = sb.table("transactions").select("id", count="exact", head=True).execute()
+        print(f"[DB 총 거래건수] {result.count}건")
+    except Exception:
+        pass
 
     print("DB 저장 완료")
 

@@ -18,7 +18,24 @@
       "Bash(gh run:*)",
       "Bash(python3 -c ':*)",
       "Bash(python -c ':*)",
-      "Bash(py -3 -c ':*)"
+      "Bash(py -3 -c ':*)",
+      "Bash(/c/Users/siyoung/AppData/Local/Microsoft/WindowsApps/python.exe -c \"print\\('hello'\\)\")",
+      "Bash(node -e ':*)",
+      "Bash(npm list:*)",
+      "Bash(node -e \"try { require.resolve\\('iconv-lite'\\); console.log\\('found'\\); } catch\\(e\\) { console.log\\('not found'\\); }\")",
+      "Bash(npm install:*)",
+      "Bash(where python:*)",
+      "Bash(python.exe --version)",
+      "Bash(python.exe -c \"import pandas; print\\(pandas.__version__\\)\")",
+      "Read(//c/Users/siyoung/AppData/Local/Programs/**)",
+      "Bash(ls /c/Python*)",
+      "Bash(where python3:*)",
+      "Bash(where conda:*)",
+      "Bash(where pip:*)",
+      "Bash(ls /c/Users/siyoung/AppData/Local/Programs/Python/*/python.exe)",
+      "Bash(ls /c/Python*/python.exe)",
+      "Bash(/c/Users/siyoung/AppData/Local/Programs/Python/Python312/python.exe --version)",
+      "Bash(/c/Users/siyoung/AppData/Local/Programs/Python/Python312/python.exe -m pip install pandas jupyter ipykernel)"
     ]
   }
 }
