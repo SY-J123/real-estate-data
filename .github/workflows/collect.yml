@@ -1,8 +1,10 @@
 name: Collect Real Estate Data
 
 on:
+  push:
+    branches: [master]       # 푸시 시 실행 (초기 테스트용)
   schedule:
-    - cron: "0 15 * * *"  # 매일 자정 (KST = UTC+9)
+    - cron: "0 15 * * *"    # 매일 자정 (KST = UTC+9)
   workflow_dispatch:         # 수동 실행 가능
 
 jobs:
