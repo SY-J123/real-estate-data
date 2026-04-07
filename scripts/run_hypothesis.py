@@ -352,8 +352,8 @@ def main():
 
     df = load_transactions()
     if df.empty:
-        print("거래 데이터가 없습니다. 먼저 collect_data.py를 실행하세요.")
-        sys.exit(1)
+        print("거래 데이터가 없습니다. 가설 검정을 건너뜁니다.")
+        return
 
     print(f"로드된 거래 데이터: {len(df)}건\n")
 

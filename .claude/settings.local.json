@@ -11,7 +11,11 @@
       "Bash(node -e \"const d=require\\('./public/seoul-districts.geojson'\\); console.log\\(d.features.length, 'districts'\\); d.features.slice\\(0,3\\).forEach\\(f => console.log\\(f.properties\\)\\)\")",
       "Bash(node -e \"const fs=require\\('fs'\\); const d=JSON.parse\\(fs.readFileSync\\('./public/seoul-districts.geojson','utf8'\\)\\); console.log\\(d.features.length,'districts'\\); d.features.slice\\(0,3\\).forEach\\(f => console.log\\(f.properties\\)\\)\")",
       "Bash(gh repo:*)",
-      "Bash(gh auth:*)"
+      "Bash(gh auth:*)",
+      "Bash(gh secret:*)",
+      "Bash(gh workflow:*)",
+      "Bash(gh api:*)",
+      "Bash(gh run:*)"
     ]
   }
 }

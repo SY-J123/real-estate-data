@@ -9,6 +9,7 @@ import os
 import sys
 import json
 import time
+import xml.etree.ElementTree as ET
 from datetime import datetime, timedelta
 
 import requests
@@ -52,22 +53,55 @@ def fetch_transactions(deal_type: str, district_code: str, deal_ym: str) -> list
     try:
         resp = requests.get(url, params=params, timeout=30)
         resp.raise_for_status()
-        data = resp.json()
+        text = resp.text.strip()
+
+        # JSON 응답 시도
+        if text.startswith("{"):
+            data = json.loads(text)
+            items = (
+                data.get("response", {})
+                .get("body", {})
+                .get("items", {})
+                .get("item", [])
+            )
+            if isinstance(items, dict):
+                items = [items]
+            return items
+
+        # XML 응답 파싱
+        if text.startswith("<?xml") or text.startswith("<"):
+            return _parse_xml_response(text)
+
+        print(f"  [WARN] 알 수 없는 응답 형식: {text[:200]}")
+        return []
+
     except (requests.RequestException, json.JSONDecodeError) as e:
         print(f"  [ERROR] {deal_type} {district_code} {deal_ym}: {e}")
         return []
 
-    items = (
-        data.get("response", {})
-        .get("body", {})
-        .get("items", {})
-        .get("item", [])
-    )
 
-    if isinstance(items, dict):
-        items = [items]
+def _parse_xml_response(xml_text: str) -> list[dict]:
+    """XML 응답을 파싱하여 dict 리스트로 반환한다."""
+    try:
+        root = ET.fromstring(xml_text)
 
-    return items
+        # 에러 응답 체크
+        err_msg = root.findtext(".//errMsg") or root.findtext(".//returnAuthMsg")
+        if err_msg and "SERVICE" in err_msg.upper():
+            print(f"  [API ERROR] {err_msg}")
+            return []
+
+        items = root.findall(".//item")
+        result = []
+        for item in items:
+            row = {}
+            for child in item:
+                row[child.tag] = child.text.strip() if child.text else ""
+            result.append(row)
+        return result
+    except ET.ParseError as e:
+        print(f"  [XML ERROR] {e}")
+        return []
 
 
 def parse_trade_item(item: dict, district_code: str) -> dict | None:
@@ -142,12 +176,30 @@ def collect_all(months_back: int = 12) -> list[dict]:
 
     total = len(DISTRICT_CODES) * len(deal_yms) * 2
     count = 0
+    debug_logged = False
 
     for deal_ym in deal_yms:
         for code, gu in DISTRICT_CODES.items():
             # 매매
             count += 1
             print(f"[{count}/{total}] 매매 {gu} {deal_ym}")
+
+            # 첫 번째 요청의 raw 응답 출력 (디버깅)
+            if not debug_logged:
+                try:
+                    debug_resp = requests.get(API_URLS["매매"], params={
+                        "serviceKey": API_KEY,
+                        "LAWD_CD": code,
+                        "DEAL_YMD": deal_ym,
+                        "pageNo": "1",
+                        "numOfRows": "3",
+                        "type": "json",
+                    }, timeout=30)
+                    print(f"  [DEBUG] Status: {debug_resp.status_code}")
+                    print(f"  [DEBUG] Response (first 500 chars): {debug_resp.text[:500]}")
+                    debug_logged = True
+                except Exception as e:
+                    print(f"  [DEBUG ERROR] {e}")
             items = fetch_transactions("매매", code, deal_ym)
             for item in items:
                 row = parse_trade_item(item, code)
