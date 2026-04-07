@@ -12,7 +12,19 @@ export async function fetchDistrictData(months: number): Promise<DistrictData[]>
   });
 
   if (error) throw new Error(error.message);
-  return data ?? [];
+  return (data ?? []).map(mapDistrict);
+}
+
+function mapDistrict(row: Record<string, unknown>): DistrictData {
+  return {
+    gu: row.gu as string,
+    avgPrice: Number(row.avg_price ?? row.avgPrice ?? 0),
+    prevAvgPrice: Number(row.prev_avg_price ?? row.prevAvgPrice ?? 0),
+    changeRate: Number(row.change_rate ?? row.changeRate ?? 0),
+    transactionCount: Number(row.transaction_count ?? row.transactionCount ?? 0),
+    jeonseRate: Number(row.jeonse_rate ?? row.jeonseRate ?? 0),
+    avgJeonsePrice: Number(row.avg_jeonse_price ?? row.avgJeonsePrice ?? 0),
+  };
 }
 
 // 동별 집계 데이터 조회
@@ -26,7 +38,10 @@ export async function fetchDongData(months: number): Promise<DongData[]> {
   });
 
   if (error) throw new Error(error.message);
-  return data ?? [];
+  return (data ?? []).map((row: Record<string, unknown>): DongData => ({
+    ...mapDistrict(row),
+    dong: row.dong as string,
+  }));
 }
 
 // 개별 거래 내역 조회
