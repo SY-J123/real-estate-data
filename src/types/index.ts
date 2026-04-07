@@ -63,6 +63,8 @@ export interface SummaryStats {
   oneMonthChange: number;   // 최근 1개월 상승률 (%)
   oneYearChange: number;    // 최근 1년 상승률 (%)
   transactionCount: number; // 매매 거래량
+  baseRate: number;         // 한국은행 기준금리 (%)
+  baseRateDate: string;     // 기준금리 최근 결정일 (YYYY-MM-DD)
 }
 
 // 서울 전체 월별 평균 평당가 + 거래량

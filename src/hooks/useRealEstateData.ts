@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { fetchDistrictData, fetchMonthlyAvg, fetchLastUpdated } from "@/lib/api";
+import { BASE_RATE_INFO } from "@/lib/macro";
 import type { DistrictData, MonthlyAvgData, SummaryStats, FilterState } from "@/types";
 
 interface UseRealEstateDataReturn {
@@ -45,6 +46,8 @@ function computeSummaryStats(
     oneMonthChange: weightedAvgChangeRate(oneMonth),
     oneYearChange: weightedAvgChangeRate(oneYear),
     transactionCount: totalCount,
+    baseRate: BASE_RATE_INFO.value,
+    baseRateDate: BASE_RATE_INFO.date,
   };
 }
 

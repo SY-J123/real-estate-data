@@ -6,6 +6,10 @@ interface SummaryCardsProps {
   stats: SummaryStats | null;
 }
 
+function formatDate(value: string): string {
+  return value.replaceAll("-", ".");
+}
+
 function formatPrice(value: number): string {
   if (value >= 10000) {
     const eok = Math.floor(value / 10000);
@@ -82,10 +86,9 @@ export default function SummaryCards({ stats }: SummaryCardsProps) {
         sub="선택 기간 내"
       />
       <Card
-        label="서울 미분양"
-        value="—"
-        sub="준비중"
-        disabled
+        label="한국은행 기준금리"
+        value={`${stats.baseRate.toFixed(2)}%`}
+        sub={`${formatDate(stats.baseRateDate)} 기준`}
       />
     </div>
   );
