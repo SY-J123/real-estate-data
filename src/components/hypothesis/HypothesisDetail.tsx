@@ -57,7 +57,26 @@ export default function HypothesisDetail({ hypothesis }: HypothesisDetailProps) 
       </div>
 
       {/* 차트 */}
-      {chartType === "line" && lineCharts && lineCharts.length > 0 ? (
+      {chartType === "overlay" && lineCharts && lineCharts.length > 0 ? (
+        <div className="mt-6">
+          <ResponsiveContainer width="100%" height={400}>
+            <LineChart data={lineCharts[0].data.map((d, i) => {
+              const point: Record<string, unknown> = { date: d.date };
+              lineCharts.forEach((panel) => { point[panel.title] = panel.data[i]?.value; });
+              return point;
+            })}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+              <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+              <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${v}%`} />
+              <Tooltip formatter={(v) => `${Number(v).toFixed(1)}%`} />
+              <Legend />
+              {lineCharts.map((panel) => (
+                <Line key={panel.title} type="monotone" dataKey={panel.title} stroke={panel.color} strokeWidth={2} dot={false} />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      ) : chartType === "line" && lineCharts && lineCharts.length > 0 ? (
         <div className="mt-6 space-y-4">
           {lineCharts.map((panel) => {
             const values = panel.data.map((d) => d.value);
@@ -96,8 +115,8 @@ export default function HypothesisDetail({ hypothesis }: HypothesisDetailProps) 
         </div>
       ) : null}
 
-      {/* 검정 결과 — method가 있는 가설만 표시 */}
-      {method && (
+      {/* 검정 결과 — 통계 검정이 수행된 가설만 표시 */}
+      {pValue > 0 && (
         <>
           <div className={`mt-6 rounded-md border p-4 ${RESULT_STYLE[result]}`}>
             <h4 className="text-sm font-semibold text-zinc-700">검정 결과</h4>

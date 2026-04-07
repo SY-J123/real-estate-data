@@ -18,7 +18,8 @@
       "Bash(gh run:*)",
       "Bash(node -e ':*)",
       "Bash(npx vercel:*)",
-      "Bash(npx plugins:*)"
+      "Bash(npx plugins:*)",
+      "Bash(/c/Users/siyoung/AppData/Local/Programs/Python/Python312/python.exe -m pip install yfinance)"
     ]
   }
 }

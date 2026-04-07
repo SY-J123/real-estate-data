@@ -69,7 +69,7 @@ export interface Hypothesis {
   pValue: number;
   testStat: number;
   chartData: HypothesisChartData[];
-  chartType?: "bar" | "line";
+  chartType?: "bar" | "line" | "overlay";
   lineCharts?: LineChartPanel[];
   details: Record<string, unknown>;
 }
