@@ -11,3 +11,9 @@ export function getSupabase(): SupabaseClient {
   _supabase = createClient(supabaseUrl, supabaseAnonKey);
   return _supabase;
 }
+
+// Auth용 직접 export
+export const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ""
+);

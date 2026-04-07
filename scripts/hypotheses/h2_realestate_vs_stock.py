@@ -1,8 +1,8 @@
 """
 가설 2: 서울 부동산은 주식보다 수익률이 높다.
-비교: S&P 500 / KOSPI / (부동산은 데이터 수집 완료 후 추가)
+비교: S&P 500 / KOSPI vs 서울 아파트 매매가지수 (지역별 + 면적별)
 활용 데이터: Yahoo Finance (S&P 500, KOSPI), 국토교통부 실거래가
-연초 vs 연말 종가 기준 누적 수익률 비교
+기준월(2021-01) = 100 으로 환산한 지수 비교
 """
 
 import os
@@ -11,86 +11,218 @@ import pandas as pd
 
 HYPOTHESIS_ID = "h2"
 
+GANGNAM3 = {"강남구", "서초구", "송파구"}
+
+AREA_BINS = [
+    ("소형 (~60㎡)", 0, 60),
+    ("중형 (60~85㎡)", 60, 85),
+    ("대형 (85㎡~)", 85, 9999),
+]
+
+REGION_COLORS = {
+    "서울 전체": "#000000",
+    "강남3구": "#e74c3c",
+    "비강남": "#2ecc71",
+}
+
+AREA_COLORS = {
+    "소형 (~60㎡)": "#e74c3c",
+    "중형 (60~85㎡)": "#3498db",
+    "대형 (85㎡~)": "#2ecc71",
+}
+
+STOCK_COLORS = {
+    "S&P 500": "#1f77b4",
+    "KOSPI": "#ff7f0e",
+}
+
+
+def _to_index(series: pd.Series) -> pd.Series:
+    """첫 값을 100으로 놓은 지수로 변환한다."""
+    base = series.iloc[0]
+    if base == 0:
+        return series * 0
+    return round(series / base * 100, 1)
+
+
+def _build_stock_index(data_dir: str) -> pd.DataFrame:
+    """월별 주식 지수를 base=100으로 환산한다."""
+    path = os.path.join(data_dir, "stock_monthly.csv")
+    stock = pd.read_csv(path)
+    stock["date"] = pd.to_datetime(stock["date"])
+    stock["month"] = stock["date"].dt.to_period("M")
+    stock = stock.sort_values("month")
+
+    result = pd.DataFrame({"month": stock["month"]})
+    result["S&P 500"] = _to_index(stock["SP500"].reset_index(drop=True))
+    result["KOSPI"] = _to_index(stock["KOSPI"].reset_index(drop=True))
+    return result
+
+
+def _build_region_index(df: pd.DataFrame) -> pd.DataFrame:
+    """지역별 월별 매매가지수 (서울전체 / 강남3구 / 비강남)."""
+    trades = df[(df["deal_type"] == "매매") & (df["area"] < 135)].copy()
+    if trades.empty:
+        return pd.DataFrame()
+
+    trades["month"] = trades["deal_date"].dt.to_period("M")
+    trades["region"] = trades["gu"].apply(
+        lambda g: "강남3구" if g in GANGNAM3 else "비강남"
+    )
+
+    # 서울 전체
+    seoul = trades.groupby("month")["price"].mean().sort_index()
+    # 강남3구 / 비강남
+    region_avg = trades.groupby(["month", "region"])["price"].mean().unstack(fill_value=0).sort_index()
+
+    result = pd.DataFrame({"month": seoul.index})
+    result["서울 전체"] = _to_index(seoul.reset_index(drop=True))
+    for col in ["강남3구", "비강남"]:
+        if col in region_avg.columns:
+            s = region_avg[col].reindex(seoul.index, fill_value=0)
+            result[col] = _to_index(s.reset_index(drop=True))
+    return result
+
+
+def _build_area_index(df: pd.DataFrame) -> pd.DataFrame:
+    """면적별 월별 매매가지수 (소형 / 중형 / 대형)."""
+    trades = df[df["deal_type"] == "매매"].copy()
+    if trades.empty:
+        return pd.DataFrame()
+
+    trades["month"] = trades["deal_date"].dt.to_period("M")
+
+    # 전체 월 기준
+    all_months = trades.groupby("month")["price"].mean().sort_index()
+    result = pd.DataFrame({"month": all_months.index})
+
+    for label, area_min, area_max in AREA_BINS:
+        subset = trades[(trades["area"] >= area_min) & (trades["area"] < area_max)]
+        if subset.empty:
+            continue
+        monthly = subset.groupby("month")["price"].mean().sort_index()
+        monthly = monthly.reindex(all_months.index)
+        # 결측 보간
+        monthly = monthly.interpolate(method="linear").bfill().ffill()
+        result[label] = _to_index(monthly.reset_index(drop=True))
+
+    return result
+
+
+def _merge_and_build_charts(
+    stock_df: pd.DataFrame,
+    realestate_df: pd.DataFrame,
+    re_colors: dict,
+) -> list[dict]:
+    """주식 지수 + 부동산 지수를 병합하여 line_charts 리스트를 만든다."""
+    if realestate_df.empty:
+        return []
+
+    merged = pd.merge(stock_df, realestate_df, on="month", how="inner")
+    if merged.empty:
+        return []
+
+    merged = merged.sort_values("month")
+
+    # 병합 후 주식도 첫 행 기준으로 재조정 (기간 맞춤)
+    for col in ["S&P 500", "KOSPI"]:
+        base = merged[col].iloc[0]
+        if base > 0:
+            merged[col] = round(merged[col] / base * 100, 1)
+
+    # 부동산도 첫 행 기준 재조정
+    for col in re_colors:
+        if col in merged.columns:
+            base = merged[col].iloc[0]
+            if base > 0:
+                merged[col] = round(merged[col] / base * 100, 1)
+
+    all_colors = {**STOCK_COLORS, **re_colors}
+    charts = []
+    for label, color in all_colors.items():
+        if label not in merged.columns:
+            continue
+        data = [
+            {"date": str(row["month"]), "value": float(row[label])}
+            for _, row in merged.iterrows()
+        ]
+        final_val = round(float(merged[label].iloc[-1]) - 100, 1)
+        charts.append({
+            "title": f"{label} ({final_val:+.1f}%)",
+            "color": color,
+            "data": data,
+        })
+
+    return charts
+
 
 def run(df: pd.DataFrame) -> dict:
     data_dir = os.path.join(os.path.dirname(__file__), "..", "..", "data")
 
-    stock = pd.read_csv(os.path.join(data_dir, "stock_yearly.csv"))
+    stock_df = _build_stock_index(data_dir)
+    region_df = _build_region_index(df)
+    area_df = _build_area_index(df)
 
-    series_map = {"S&P 500": "SP500_cumul", "KOSPI": "KOSPI_cumul"}
-    colors = {"S&P 500": "#1f77b4", "KOSPI": "#ff7f0e"}
+    region_charts = _merge_and_build_charts(stock_df, region_df, REGION_COLORS)
+    area_charts = _merge_and_build_charts(stock_df, area_df, AREA_COLORS)
 
-    # 부동산 데이터가 있으면 추가
-    re_path = os.path.join(data_dir, "realestate_yearly.csv")
-    if os.path.exists(re_path):
-        realestate = pd.read_csv(re_path)
-        stock = pd.merge(stock, realestate[["year", "seoul_avg", "gangnam3_avg", "non_gangnam_avg"]], on="year", how="left")
-        # 부동산 누적 수익률 계산
-        for col in ["seoul_avg", "gangnam3_avg", "non_gangnam_avg"]:
-            base = stock[col].dropna().iloc[0]
-            stock[col + "_cumul"] = round((stock[col] / base - 1) * 100, 1)
-        series_map.update({
-            "서울 전체": "seoul_avg_cumul",
-            "강남3구": "gangnam3_avg_cumul",
-            "비강남": "non_gangnam_avg_cumul",
-        })
-        colors.update({
-            "서울 전체": "#000000",
-            "강남3구": "#e74c3c",
-            "비강남": "#2ecc71",
-        })
-
-    line_charts = []
-    final_returns = {}
-    for label, col in series_map.items():
-        if col not in stock.columns:
-            continue
-        valid = stock[stock[col].notna()]
-        if valid.empty:
-            continue
-        final_ret = round(float(valid[col].iloc[-1]), 1)
-        final_returns[label] = final_ret
-
-        data = [{"date": str(int(row["year"])), "value": round(float(row[col]), 1)}
-                for _, row in valid.iterrows()]
-        line_charts.append({
-            "title": f"{label} ({final_ret:+.1f}%)",
-            "color": colors[label],
-            "data": data,
-        })
-
-    desc_parts = [f"{label} {ret:+.1f}%" for label, ret in final_returns.items()]
-    year_start = int(stock["year"].iloc[0])
-    year_end = int(stock["year"].iloc[-1])
-
-    # 부동산 데이터가 있으면 비교, 없으면 주식만
+    # 결론 도출
     result = "inconclusive"
-    conclusion = "부동산 데이터 수집 완료 후 비교 예정."
-    if "서울 전체" in final_returns:
-        seoul_ret = final_returns["서울 전체"]
-        stock_max = max(final_returns["S&P 500"], final_returns["KOSPI"])
-        result = "supported" if seoul_ret > stock_max else "rejected"
+    conclusion = "부동산 거래 데이터가 부족하여 비교가 어렵습니다."
+
+    if region_charts:
+        # 최종 수익률 추출
+        final_returns = {}
+        for chart in region_charts:
+            label = chart["title"].split(" (")[0]
+            val = chart["data"][-1]["value"] - 100
+            final_returns[label] = round(val, 1)
+
+        seoul_ret = final_returns.get("서울 전체", 0)
+        sp500_ret = final_returns.get("S&P 500", 0)
+        kospi_ret = final_returns.get("KOSPI", 0)
+        gangnam_ret = final_returns.get("강남3구", 0)
+        stock_max = max(sp500_ret, kospi_ret)
+
+        if seoul_ret > stock_max:
+            result = "supported"
+        else:
+            result = "rejected"
+
+        parts = [f"{k} {v:+.1f}%" for k, v in final_returns.items()]
         conclusion = (
-            "서울 전체 부동산 수익률은 주식 대비 낮으나, "
-            "강남3구는 의미 있는 상승을 보인다."
+            f"동일 기간 누적 수익률: {', '.join(parts)}. "
         )
+        if gangnam_ret > stock_max:
+            conclusion += "서울 전체는 주식 대비 저조하나, 강남3구는 주식을 상회하는 수익률을 보인다."
+        elif seoul_ret > stock_max:
+            conclusion += "서울 부동산이 주식 대비 높은 수익률을 기록했다."
+        else:
+            conclusion += "서울 부동산 수익률은 주식(특히 S&P 500) 대비 저조하다."
 
     return {
         "id": HYPOTHESIS_ID,
         "title": "서울 부동산은 주식보다 수익률이 높다",
         "description": (
-            f"동일 기간({year_start}~{year_end}년) 연초 대비 연말 종가 기준 누적 수익률 비교: "
-            f"{', '.join(desc_parts)}. "
-            f"{conclusion} "
+            f"월별 매매가지수(기준월=100)와 주식지수를 동일 기간 비교. {conclusion} "
             "(활용 데이터: Yahoo Finance, 국토교통부 실거래가)"
         ),
-        "method": "",
+        "method": "매매가지수 추세 비교 (지역별 + 면적별)",
         "result": result,
         "p_value": 0.0,
         "test_stat": 0.0,
         "chart_data": [],
         "details": {
-            "chart_type": "overlay",
-            "line_charts": line_charts,
+            "chart_type": "multi_overlay",
+            "chart_groups": [
+                {
+                    "title": "지역별 매매가지수 vs 주식지수",
+                    "line_charts": region_charts,
+                },
+                {
+                    "title": "면적별 매매가지수 vs 주식지수",
+                    "line_charts": area_charts,
+                },
+            ],
         },
     }

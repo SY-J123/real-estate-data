@@ -17,7 +17,7 @@ export default function Navigation() {
         <Link href="/dashboard" className="text-lg font-bold text-zinc-900">
           서울 부동산 대시보드
         </Link>
-        <div className="flex gap-1">
+        <div className="flex items-center gap-1">
           {NAV_ITEMS.map(({ href, label }) => {
             const isActive = pathname === href;
             return (

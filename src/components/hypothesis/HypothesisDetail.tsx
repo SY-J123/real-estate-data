@@ -42,7 +42,7 @@ function formatValue(v: number) {
 }
 
 export default function HypothesisDetail({ hypothesis }: HypothesisDetailProps) {
-  const { title, description, method, result, pValue, testStat, chartData, chartType, lineCharts, details } = hypothesis;
+  const { title, description, method, result, pValue, testStat, chartData, chartType, lineCharts, chartGroups, details } = hypothesis;
 
   return (
     <div className="rounded-lg border border-zinc-200 bg-white p-6">
@@ -57,7 +57,31 @@ export default function HypothesisDetail({ hypothesis }: HypothesisDetailProps) 
       </div>
 
       {/* 차트 */}
-      {chartType === "overlay" && lineCharts && lineCharts.length > 0 ? (
+      {chartType === "multi_overlay" && chartGroups && chartGroups.length > 0 ? (
+        <div className="mt-6 space-y-6">
+          {chartGroups.map((group) => (
+            <div key={group.title}>
+              <h4 className="mb-2 text-sm font-semibold text-zinc-700">{group.title}</h4>
+              <ResponsiveContainer width="100%" height={350}>
+                <LineChart data={group.lineCharts[0]?.data.map((d, i) => {
+                  const point: Record<string, unknown> = { date: d.date };
+                  group.lineCharts.forEach((panel) => { point[panel.title] = panel.data[i]?.value; });
+                  return point;
+                }) ?? []}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+                  <YAxis tick={{ fontSize: 11 }} domain={["dataMin - 5", "dataMax + 5"]} />
+                  <Tooltip formatter={(v) => `${Number(v).toFixed(1)}`} />
+                  <Legend />
+                  {group.lineCharts.map((panel) => (
+                    <Line key={panel.title} type="monotone" dataKey={panel.title} stroke={panel.color} strokeWidth={2} dot={false} />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          ))}
+        </div>
+      ) : chartType === "overlay" && lineCharts && lineCharts.length > 0 ? (
         <div className="mt-6">
           <ResponsiveContainer width="100%" height={400}>
             <LineChart data={lineCharts[0].data.map((d, i) => {
@@ -67,8 +91,8 @@ export default function HypothesisDetail({ hypothesis }: HypothesisDetailProps) 
             })}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
               <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
-              <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${v}%`} />
-              <Tooltip formatter={(v) => `${Number(v).toFixed(1)}%`} />
+              <YAxis tick={{ fontSize: 11 }} domain={["dataMin - 2", "dataMax + 2"]} />
+              <Tooltip formatter={(v) => Number(v).toFixed(1)} />
               <Legend />
               {lineCharts.map((panel) => (
                 <Line key={panel.title} type="monotone" dataKey={panel.title} stroke={panel.color} strokeWidth={2} dot={false} />

@@ -1,53 +1,28 @@
 "use client";
 
 import { RANKING_DISPLAY_COUNT, CHANGE_RATE_COLORS } from "@/constants";
-import type { DistrictData, DongData, MetricType } from "@/types";
+import type { DistrictData, MetricType } from "@/types";
 import { getChangeRate } from "@/types";
 
 interface GainersLosersProps {
   districtData: DistrictData[];
-  dongData: DongData[];
   metric: MetricType;
 }
 
 export default function GainersLosers({
   districtData,
-  dongData,
   metric,
 }: GainersLosersProps) {
-  const rate = (d: DistrictData | DongData) => getChangeRate(d, metric);
+  const rate = (d: DistrictData) => getChangeRate(d, metric);
 
   const sortedDistricts = [...districtData].sort((a, b) => rate(b) - rate(a));
   const districtGainers = sortedDistricts.slice(0, RANKING_DISPLAY_COUNT);
   const districtLosers = sortedDistricts.slice(-RANKING_DISPLAY_COUNT).reverse();
 
-  const sortedDongs = [...dongData].sort((a, b) => rate(b) - rate(a));
-  const dongGainers = sortedDongs.slice(0, RANKING_DISPLAY_COUNT);
-  const dongLosers = sortedDongs.slice(-RANKING_DISPLAY_COUNT).reverse();
-
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      {/* 구 단위 */}
-      <RankingCard title="구별 상승 TOP" items={districtGainers} type="gainer" formatLabel={(d) => d.gu} getValue={rate} unit={metric === "jeonseRate" ? "%p" : "%"} />
-      <RankingCard title="구별 하락 TOP" items={districtLosers} type="loser" formatLabel={(d) => d.gu} getValue={rate} unit={metric === "jeonseRate" ? "%p" : "%"} />
-
-      {/* 동 단위 */}
-      <RankingCard
-        title="동별 상승 TOP"
-        items={dongGainers}
-        type="gainer"
-        formatLabel={(d) => `${d.gu} ${d.dong}`}
-        getValue={rate}
-        unit={metric === "jeonseRate" ? "%p" : "%"}
-      />
-      <RankingCard
-        title="동별 하락 TOP"
-        items={dongLosers}
-        type="loser"
-        formatLabel={(d) => `${d.gu} ${d.dong}`}
-        getValue={rate}
-        unit={metric === "jeonseRate" ? "%p" : "%"}
-      />
+      <RankingCard title="구별 상승 TOP" items={districtGainers} type="gainer" formatLabel={(d) => d.gu} getValue={rate} unit={"%"} />
+      <RankingCard title="구별 하락 TOP" items={districtLosers} type="loser" formatLabel={(d) => d.gu} getValue={rate} unit={"%"} />
     </div>
   );
 }

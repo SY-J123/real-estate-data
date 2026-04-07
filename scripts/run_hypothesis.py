@@ -1,95 +1,84 @@
 """
 가설 검정 러너.
 
-각 가설 모듈(hypotheses/)의 run() 을 실행하고 결과를 Supabase hypotheses 테이블에 저장한다.
+각 가설 모듈(hypotheses/)의 run() 을 실행하고 결과를 public/data/hypotheses.json에 저장한다.
+DB 의존 없이 로컬 CSV에서 데이터를 로드한다.
 """
 
+import json
 import os
 import sys
-import json
-from datetime import datetime
 
 import pandas as pd
-from supabase import create_client
 
 from hypotheses import ALL as HYPOTHESIS_MODULES
 
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "")
-SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_KEY", "")
-
-
-def get_supabase():
-    return create_client(SUPABASE_URL, SUPABASE_KEY)
+DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
+CSV_PATH = os.path.join(DATA_DIR, "transactions.csv")
+OUT_PATH = os.path.join(os.path.dirname(__file__), "..", "public", "data", "hypotheses.json")
 
 
 def load_transactions() -> pd.DataFrame:
-    """Supabase에서 전체 거래 데이터를 로드한다."""
-    sb = get_supabase()
-    all_data = []
-    offset = 0
-    batch = 1000
+    """로컬 CSV에서 거래 데이터를 로드한다."""
+    if not os.path.exists(CSV_PATH):
+        print(f"ERROR: {CSV_PATH} 파일이 없습니다.")
+        print("먼저 scripts/export_transactions.py 를 실행하세요.")
+        sys.exit(1)
 
-    while True:
-        resp = sb.table("transactions").select("*").range(offset, offset + batch - 1).execute()
-        rows = resp.data
-        if not rows:
-            break
-        all_data.extend(rows)
-        offset += batch
-
-    df = pd.DataFrame(all_data)
+    df = pd.read_csv(CSV_PATH, encoding="utf-8-sig")
     if not df.empty:
-        df["deal_date"] = pd.to_datetime(df["deal_date"])
+        df["deal_date"] = pd.to_datetime(df["deal_date"], errors="coerce")
         df["price"] = pd.to_numeric(df["price"], errors="coerce")
         df["area"] = pd.to_numeric(df["area"], errors="coerce")
         df["build_year"] = pd.to_numeric(df["build_year"], errors="coerce")
     return df
 
 
-def cleanup_stale(valid_ids: list[str]) -> None:
-    """ALL 목록에 없는 가설을 삭제한다."""
-    sb = get_supabase()
-    resp = sb.table("hypotheses").select("id").execute()
-    existing = {row["id"] for row in resp.data}
-    stale = existing - set(valid_ids)
-    for sid in stale:
-        sb.table("hypotheses").delete().eq("id", sid).execute()
-    if stale:
-        print(f"임시 가설 {len(stale)}건 삭제: {stale}")
-
-
 def save_results(results: list[dict]) -> None:
-    """검정 결과를 Supabase에 저장한다."""
-    sb = get_supabase()
+    """검정 결과를 정적 JSON 파일로 저장한다."""
+    # 프론트엔드 Hypothesis 타입에 맞게 변환
+    output = []
     for r in results:
-        sb.table("hypotheses").upsert({
+        details = r.get("details", {})
+        entry = {
             "id": r["id"],
             "title": r["title"],
             "description": r["description"],
             "method": r["method"],
             "result": r["result"],
-            "p_value": r["p_value"],
-            "test_stat": r["test_stat"],
-            "chart_data": json.dumps(r["chart_data"]),
-            "details": json.dumps(r["details"]),
-            "analyzed_at": datetime.now().isoformat(),
-        }, on_conflict="id").execute()
+            "pValue": r["p_value"],
+            "testStat": r["test_stat"],
+            "chartData": r.get("chart_data", []),
+            "chartType": details.get("chart_type", "bar"),
+        }
+        # lineCharts (단일 그룹)
+        if "line_charts" in details:
+            entry["lineCharts"] = details["line_charts"]
+        # chartGroups (다중 그룹)
+        if "chart_groups" in details:
+            entry["chartGroups"] = [
+                {"title": g["title"], "lineCharts": g["line_charts"]}
+                for g in details["chart_groups"]
+            ]
+        entry["details"] = {
+            k: v for k, v in details.items()
+            if k not in ("chart_type", "line_charts", "chart_groups")
+        }
+        output.append(entry)
 
-    print(f"가설 검정 결과 {len(results)}건 저장 완료")
+    os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
+    with open(OUT_PATH, "w", encoding="utf-8") as f:
+        json.dump(output, f, ensure_ascii=False, indent=2)
+
+    size_kb = os.path.getsize(OUT_PATH) / 1024
+    print(f"결과 저장: {OUT_PATH} ({size_kb:.1f}KB)")
 
 
 def main():
-    if not SUPABASE_URL or not SUPABASE_KEY:
-        print("ERROR: SUPABASE_URL / SUPABASE_SERVICE_KEY 환경변수가 설정되지 않았습니다.")
-        sys.exit(1)
-
     print("=== 가설 검정 시작 ===\n")
 
     df = load_transactions()
     print(f"로드된 거래 데이터: {len(df)}건\n")
-
-    valid_ids = [mod.HYPOTHESIS_ID for mod in HYPOTHESIS_MODULES]
-    cleanup_stale(valid_ids)
 
     results = [mod.run(df) for mod in HYPOTHESIS_MODULES]
 

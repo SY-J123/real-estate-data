@@ -4,17 +4,16 @@ import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
 import type { Layer } from "leaflet";
 import { MAP_CENTER, MAP_ZOOM, CHANGE_RATE_COLORS } from "@/constants";
-import type { DistrictData, DongData, MetricType } from "@/types";
+import type { DistrictData, MetricType } from "@/types";
 import { getChangeRate } from "@/types";
 import "leaflet/dist/leaflet.css";
 
 interface SeoulMapProps {
   districtData: DistrictData[];
-  dongData: DongData[];
   metric: MetricType;
 }
 
-export default function SeoulMap({ districtData, dongData, metric }: SeoulMapProps) {
+export default function SeoulMap({ districtData, metric }: SeoulMapProps) {
   const [geoData, setGeoData] = useState<GeoJSON.FeatureCollection | null>(null);
 
   useEffect(() => {
@@ -54,28 +53,9 @@ export default function SeoulMap({ districtData, dongData, metric }: SeoulMapPro
     if (district) {
       const districtRate = getChangeRate(district, metric);
       const sign = districtRate > 0 ? "+" : "";
-      const unit = metric === "jeonseRate" ? "%p" : "%";
-      const dongs = dongData
-        .filter((d) => d.gu === name)
-        .sort((a, b) => getChangeRate(b, metric) - getChangeRate(a, metric));
-      const top3 = dongs.slice(0, 3);
-      const bottom3 = dongs.slice(-3).reverse();
-
-      const fmt = (d: DongData) => {
-        const r = getChangeRate(d, metric);
-        const s = r > 0 ? "+" : "";
-        return `${d.dong} <span style="color:${r >= 0 ? "#dc2626" : "#2563eb"}">${s}${r.toFixed(1)}${unit}</span>`;
-      };
-
-      const gainersHtml = top3.length
-        ? `<div style="margin-top:6px"><strong style="font-size:11px">▲ 상승</strong><br/>${top3.map(fmt).join("<br/>")}</div>`
-        : "";
-      const losersHtml = bottom3.length
-        ? `<div style="margin-top:4px"><strong style="font-size:11px">▼ 하락</strong><br/>${bottom3.map(fmt).join("<br/>")}</div>`
-        : "";
 
       layer.bindTooltip(
-        `<strong>${name}</strong> ${sign}${districtRate.toFixed(1)}${unit}${gainersHtml}${losersHtml}`,
+        `<strong>${name}</strong> ${sign}${districtRate.toFixed(1)}%`,
         { sticky: true }
       );
     }

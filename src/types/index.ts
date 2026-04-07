@@ -8,9 +8,6 @@ export interface DistrictData {
   avgJeonsePrice: number;
   prevAvgJeonsePrice: number;
   jeonseChangeRate: number; // 전세가 증감률 (%)
-  jeonseRate: number; // 전세가율 (%)
-  prevJeonseRate: number;
-  jeonseRateChange: number; // 전세가율 증감 (%p)
 }
 
 // 동 단위 데이터
@@ -24,9 +21,6 @@ export interface DongData {
   avgJeonsePrice: number;
   prevAvgJeonsePrice: number;
   jeonseChangeRate: number;
-  jeonseRate: number;
-  prevJeonseRate: number;
-  jeonseRateChange: number;
 }
 
 // 개별 거래 데이터
@@ -43,20 +37,39 @@ export interface Transaction {
   dealType: "매매" | "전세" | "월세";
 }
 
+// 면적 구간
+export type AreaType = "all" | "small" | "medium" | "large";
+
 // 필터 상태
 export interface FilterState {
   months: number; // 최근 N개월
   metric: MetricType;
+  area: AreaType;
 }
 
 // 지표 타입
-export type MetricType = "price" | "jeonse" | "jeonseRate";
+export type MetricType = "price" | "jeonse";
 
 // metric에 따른 증감률 선택
 export function getChangeRate(d: DistrictData | DongData, metric: MetricType): number {
   if (metric === "jeonse") return d.jeonseChangeRate;
-  if (metric === "jeonseRate") return d.jeonseRateChange;
   return d.changeRate;
+}
+
+// 상단 요약 카드 데이터
+export interface SummaryStats {
+  avgPrice: number;         // 서울 평균 매매 평당가 (만원/평)
+  avgJeonsePrice: number;   // 서울 평균 전세 평당가 (만원/평)
+  oneMonthChange: number;   // 최근 1개월 상승률 (%)
+  oneYearChange: number;    // 최근 1년 상승률 (%)
+  transactionCount: number; // 매매 거래량
+}
+
+// 서울 전체 월별 평균 평당가 + 거래량
+export interface MonthlyAvgData {
+  month: string; // YYYY-MM
+  avgPrice: number; // 만원/평
+  count: number; // 매매 거래 건수
 }
 
 // 가설 검정
@@ -69,8 +82,9 @@ export interface Hypothesis {
   pValue: number;
   testStat: number;
   chartData: HypothesisChartData[];
-  chartType?: "bar" | "line" | "overlay";
+  chartType?: "bar" | "line" | "overlay" | "multi_overlay";
   lineCharts?: LineChartPanel[];
+  chartGroups?: ChartGroup[];
   details: Record<string, unknown>;
 }
 
@@ -84,6 +98,12 @@ export interface LineChartPanel {
   title: string;
   color: string;
   data: { date: string; value: number }[];
+}
+
+// 여러 overlay 차트를 묶는 그룹
+export interface ChartGroup {
+  title: string;
+  lineCharts: LineChartPanel[];
 }
 
 // 지도용 GeoJSON
