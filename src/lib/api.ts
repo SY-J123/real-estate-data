@@ -22,8 +22,12 @@ function mapDistrict(row: Record<string, unknown>): DistrictData {
     prevAvgPrice: Number(row.prev_avg_price ?? row.prevAvgPrice ?? 0),
     changeRate: Number(row.change_rate ?? row.changeRate ?? 0),
     transactionCount: Number(row.transaction_count ?? row.transactionCount ?? 0),
-    jeonseRate: Number(row.jeonse_rate ?? row.jeonseRate ?? 0),
     avgJeonsePrice: Number(row.avg_jeonse_price ?? row.avgJeonsePrice ?? 0),
+    prevAvgJeonsePrice: Number(row.prev_avg_jeonse_price ?? row.prevAvgJeonsePrice ?? 0),
+    jeonseChangeRate: Number(row.jeonse_change_rate ?? row.jeonseChangeRate ?? 0),
+    jeonseRate: Number(row.jeonse_rate ?? row.jeonseRate ?? 0),
+    prevJeonseRate: Number(row.prev_jeonse_rate ?? row.prevJeonseRate ?? 0),
+    jeonseRateChange: Number(row.jeonse_rate_change ?? row.jeonseRateChange ?? 0),
   };
 }
 

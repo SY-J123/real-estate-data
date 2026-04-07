@@ -3,10 +3,14 @@ export interface DistrictData {
   gu: string;
   avgPrice: number;
   prevAvgPrice: number;
-  changeRate: number; // 증감률 (%)
+  changeRate: number; // 매매 증감률 (%)
   transactionCount: number;
-  jeonseRate: number; // 전세가율 (%)
   avgJeonsePrice: number;
+  prevAvgJeonsePrice: number;
+  jeonseChangeRate: number; // 전세가 증감률 (%)
+  jeonseRate: number; // 전세가율 (%)
+  prevJeonseRate: number;
+  jeonseRateChange: number; // 전세가율 증감 (%p)
 }
 
 // 동 단위 데이터
@@ -17,8 +21,12 @@ export interface DongData {
   prevAvgPrice: number;
   changeRate: number;
   transactionCount: number;
-  jeonseRate: number;
   avgJeonsePrice: number;
+  prevAvgJeonsePrice: number;
+  jeonseChangeRate: number;
+  jeonseRate: number;
+  prevJeonseRate: number;
+  jeonseRateChange: number;
 }
 
 // 개별 거래 데이터
@@ -43,6 +51,13 @@ export interface FilterState {
 
 // 지표 타입
 export type MetricType = "price" | "jeonse" | "jeonseRate";
+
+// metric에 따른 증감률 선택
+export function getChangeRate(d: DistrictData | DongData, metric: MetricType): number {
+  if (metric === "jeonse") return d.jeonseChangeRate;
+  if (metric === "jeonseRate") return d.jeonseRateChange;
+  return d.changeRate;
+}
 
 // 가설 검정
 export interface Hypothesis {

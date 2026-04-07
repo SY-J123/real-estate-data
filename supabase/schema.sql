@@ -57,13 +57,17 @@ CREATE OR REPLACE FUNCTION get_district_summary(
   prev_from_date DATE
 )
 RETURNS TABLE (
-  gu              TEXT,
-  avg_price       NUMERIC,
-  prev_avg_price  NUMERIC,
-  change_rate     NUMERIC,
-  transaction_count BIGINT,
-  jeonse_rate     NUMERIC,
-  avg_jeonse_price NUMERIC
+  gu                    TEXT,
+  avg_price             NUMERIC,
+  prev_avg_price        NUMERIC,
+  change_rate           NUMERIC,
+  transaction_count     BIGINT,
+  avg_jeonse_price      NUMERIC,
+  prev_avg_jeonse_price NUMERIC,
+  jeonse_change_rate    NUMERIC,
+  jeonse_rate           NUMERIC,
+  prev_jeonse_rate      NUMERIC,
+  jeonse_rate_change    NUMERIC
 )
 LANGUAGE SQL STABLE
 AS $$
@@ -80,7 +84,8 @@ AS $$
   prev_period AS (
     SELECT
       gu,
-      AVG(price) FILTER (WHERE deal_type = '매매') AS prev_avg_price
+      AVG(price) FILTER (WHERE deal_type = '매매') AS prev_avg_price,
+      AVG(price) FILTER (WHERE deal_type = '전세') AS prev_avg_jeonse_price
     FROM transactions
     WHERE deal_date >= prev_from_date AND deal_date < from_date
     GROUP BY gu
@@ -90,21 +95,36 @@ AS $$
     ROUND(c.avg_price) AS avg_price,
     ROUND(COALESCE(p.prev_avg_price, c.avg_price)) AS prev_avg_price,
     ROUND(
-      CASE
-        WHEN COALESCE(p.prev_avg_price, 0) = 0 THEN 0
-        ELSE ((c.avg_price - p.prev_avg_price) / p.prev_avg_price * 100)
-      END,
-      1
+      CASE WHEN COALESCE(p.prev_avg_price, 0) = 0 THEN 0
+           ELSE ((c.avg_price - p.prev_avg_price) / p.prev_avg_price * 100)
+      END, 1
     ) AS change_rate,
     c.transaction_count,
+    ROUND(COALESCE(c.avg_jeonse_price, 0)) AS avg_jeonse_price,
+    ROUND(COALESCE(p.prev_avg_jeonse_price, c.avg_jeonse_price, 0)) AS prev_avg_jeonse_price,
     ROUND(
-      CASE
-        WHEN COALESCE(c.avg_price, 0) = 0 THEN 0
-        ELSE (COALESCE(c.avg_jeonse_price, 0) / c.avg_price * 100)
-      END,
-      1
+      CASE WHEN COALESCE(p.prev_avg_jeonse_price, 0) = 0 THEN 0
+           ELSE ((c.avg_jeonse_price - p.prev_avg_jeonse_price) / p.prev_avg_jeonse_price * 100)
+      END, 1
+    ) AS jeonse_change_rate,
+    ROUND(
+      CASE WHEN COALESCE(c.avg_price, 0) = 0 THEN 0
+           ELSE (COALESCE(c.avg_jeonse_price, 0) / c.avg_price * 100)
+      END, 1
     ) AS jeonse_rate,
-    ROUND(COALESCE(c.avg_jeonse_price, 0)) AS avg_jeonse_price
+    ROUND(
+      CASE WHEN COALESCE(p.prev_avg_price, 0) = 0 THEN 0
+           ELSE (COALESCE(p.prev_avg_jeonse_price, 0) / p.prev_avg_price * 100)
+      END, 1
+    ) AS prev_jeonse_rate,
+    ROUND(
+      CASE WHEN COALESCE(p.prev_avg_price, 0) = 0 OR COALESCE(p.prev_avg_jeonse_price, 0) = 0 THEN 0
+           ELSE (
+             (COALESCE(c.avg_jeonse_price, 0) / NULLIF(c.avg_price, 0) * 100)
+             - (COALESCE(p.prev_avg_jeonse_price, 0) / p.prev_avg_price * 100)
+           )
+      END, 1
+    ) AS jeonse_rate_change
   FROM current_period c
   LEFT JOIN prev_period p ON c.gu = p.gu
   ORDER BY c.gu;
@@ -118,14 +138,18 @@ CREATE OR REPLACE FUNCTION get_dong_summary(
   prev_from_date DATE
 )
 RETURNS TABLE (
-  gu              TEXT,
-  dong            TEXT,
-  avg_price       NUMERIC,
-  prev_avg_price  NUMERIC,
-  change_rate     NUMERIC,
-  transaction_count BIGINT,
-  jeonse_rate     NUMERIC,
-  avg_jeonse_price NUMERIC
+  gu                    TEXT,
+  dong                  TEXT,
+  avg_price             NUMERIC,
+  prev_avg_price        NUMERIC,
+  change_rate           NUMERIC,
+  transaction_count     BIGINT,
+  avg_jeonse_price      NUMERIC,
+  prev_avg_jeonse_price NUMERIC,
+  jeonse_change_rate    NUMERIC,
+  jeonse_rate           NUMERIC,
+  prev_jeonse_rate      NUMERIC,
+  jeonse_rate_change    NUMERIC
 )
 LANGUAGE SQL STABLE
 AS $$
@@ -142,7 +166,8 @@ AS $$
   prev_period AS (
     SELECT
       gu, dong,
-      AVG(price) FILTER (WHERE deal_type = '매매') AS prev_avg_price
+      AVG(price) FILTER (WHERE deal_type = '매매') AS prev_avg_price,
+      AVG(price) FILTER (WHERE deal_type = '전세') AS prev_avg_jeonse_price
     FROM transactions
     WHERE deal_date >= prev_from_date AND deal_date < from_date
     GROUP BY gu, dong
@@ -153,21 +178,36 @@ AS $$
     ROUND(c.avg_price) AS avg_price,
     ROUND(COALESCE(p.prev_avg_price, c.avg_price)) AS prev_avg_price,
     ROUND(
-      CASE
-        WHEN COALESCE(p.prev_avg_price, 0) = 0 THEN 0
-        ELSE ((c.avg_price - p.prev_avg_price) / p.prev_avg_price * 100)
-      END,
-      1
+      CASE WHEN COALESCE(p.prev_avg_price, 0) = 0 THEN 0
+           ELSE ((c.avg_price - p.prev_avg_price) / p.prev_avg_price * 100)
+      END, 1
     ) AS change_rate,
     c.transaction_count,
+    ROUND(COALESCE(c.avg_jeonse_price, 0)) AS avg_jeonse_price,
+    ROUND(COALESCE(p.prev_avg_jeonse_price, c.avg_jeonse_price, 0)) AS prev_avg_jeonse_price,
     ROUND(
-      CASE
-        WHEN COALESCE(c.avg_price, 0) = 0 THEN 0
-        ELSE (COALESCE(c.avg_jeonse_price, 0) / c.avg_price * 100)
-      END,
-      1
+      CASE WHEN COALESCE(p.prev_avg_jeonse_price, 0) = 0 THEN 0
+           ELSE ((c.avg_jeonse_price - p.prev_avg_jeonse_price) / p.prev_avg_jeonse_price * 100)
+      END, 1
+    ) AS jeonse_change_rate,
+    ROUND(
+      CASE WHEN COALESCE(c.avg_price, 0) = 0 THEN 0
+           ELSE (COALESCE(c.avg_jeonse_price, 0) / c.avg_price * 100)
+      END, 1
     ) AS jeonse_rate,
-    ROUND(COALESCE(c.avg_jeonse_price, 0)) AS avg_jeonse_price
+    ROUND(
+      CASE WHEN COALESCE(p.prev_avg_price, 0) = 0 THEN 0
+           ELSE (COALESCE(p.prev_avg_jeonse_price, 0) / p.prev_avg_price * 100)
+      END, 1
+    ) AS prev_jeonse_rate,
+    ROUND(
+      CASE WHEN COALESCE(p.prev_avg_price, 0) = 0 OR COALESCE(p.prev_avg_jeonse_price, 0) = 0 THEN 0
+           ELSE (
+             (COALESCE(c.avg_jeonse_price, 0) / NULLIF(c.avg_price, 0) * 100)
+             - (COALESCE(p.prev_avg_jeonse_price, 0) / p.prev_avg_price * 100)
+           )
+      END, 1
+    ) AS jeonse_rate_change
   FROM current_period c
   LEFT JOIN prev_period p ON c.gu = p.gu AND c.dong = p.dong
   ORDER BY c.gu, c.dong;

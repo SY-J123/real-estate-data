@@ -11,22 +11,34 @@ import {
   Cell,
 } from "recharts";
 import { CHANGE_RATE_COLORS } from "@/constants";
-import type { DistrictData } from "@/types";
+import type { DistrictData, MetricType } from "@/types";
+import { getChangeRate } from "@/types";
+
+const METRIC_LABELS: Record<MetricType, string> = {
+  price: "매매가 증감률",
+  jeonse: "전세가 증감률",
+  jeonseRate: "전세가율 증감",
+};
 
 interface PriceChartProps {
   districtData: DistrictData[];
+  metric: MetricType;
 }
 
-export default function PriceChart({ districtData }: PriceChartProps) {
-  const sorted = [...districtData].sort((a, b) => b.changeRate - a.changeRate);
+export default function PriceChart({ districtData, metric }: PriceChartProps) {
+  const chartData = districtData
+    .map((d) => ({ gu: d.gu, value: getChangeRate(d, metric) }))
+    .sort((a, b) => b.value - a.value);
+
+  const unit = metric === "jeonseRate" ? "%p" : "%";
 
   return (
     <div className="rounded-lg border border-zinc-200 bg-white p-4">
       <h3 className="mb-4 text-sm font-semibold text-zinc-700">
-        구별 증감률 (%)
+        구별 {METRIC_LABELS[metric]} ({unit})
       </h3>
       <ResponsiveContainer width="100%" height={400}>
-        <BarChart data={sorted} margin={{ top: 5, right: 20, left: 0, bottom: 60 }}>
+        <BarChart data={chartData} margin={{ top: 5, right: 20, left: 0, bottom: 60 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
           <XAxis
             dataKey="gu"
@@ -34,16 +46,16 @@ export default function PriceChart({ districtData }: PriceChartProps) {
             angle={-45}
             textAnchor="end"
           />
-          <YAxis tick={{ fontSize: 12 }} unit="%" />
+          <YAxis tick={{ fontSize: 12 }} unit={unit} />
           <Tooltip
-            formatter={(value) => [`${Number(value).toFixed(1)}%`, "증감률"]}
+            formatter={(value) => [`${Number(value).toFixed(1)}${unit}`, METRIC_LABELS[metric]]}
           />
-          <Bar dataKey="changeRate" radius={[4, 4, 0, 0]}>
-            {sorted.map((entry, idx) => (
+          <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+            {chartData.map((entry, idx) => (
               <Cell
                 key={idx}
                 fill={
-                  entry.changeRate >= 0
+                  entry.value >= 0
                     ? CHANGE_RATE_COLORS.positive
                     : CHANGE_RATE_COLORS.negative
                 }

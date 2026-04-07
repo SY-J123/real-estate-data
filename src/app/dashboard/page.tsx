@@ -50,13 +50,13 @@ export default function DashboardPage() {
         </div>
       ) : (
         <div className="space-y-6">
+          <SeoulMap districtData={districtData} dongData={dongData} metric={filter.metric} />
           <GainersLosers
             districtData={districtData}
             dongData={dongData}
             metric={filter.metric}
           />
-          <PriceChart districtData={districtData} />
-          <SeoulMap districtData={districtData} />
+          <PriceChart districtData={districtData} metric={filter.metric} />
         </div>
       )}
     </div>

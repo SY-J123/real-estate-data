@@ -7,6 +7,8 @@ import os
 
 import pandas as pd
 
+HYPOTHESIS_ID = "h1"
+
 
 def run(df: pd.DataFrame) -> dict:
     csv_path = os.path.join(os.path.dirname(__file__), "..", "..", "data", "seoul_household.csv")

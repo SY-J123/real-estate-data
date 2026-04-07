@@ -46,6 +46,18 @@ def load_transactions() -> pd.DataFrame:
     return df
 
 
+def cleanup_stale(valid_ids: list[str]) -> None:
+    """ALL 목록에 없는 가설을 삭제한다."""
+    sb = get_supabase()
+    resp = sb.table("hypotheses").select("id").execute()
+    existing = {row["id"] for row in resp.data}
+    stale = existing - set(valid_ids)
+    for sid in stale:
+        sb.table("hypotheses").delete().eq("id", sid).execute()
+    if stale:
+        print(f"임시 가설 {len(stale)}건 삭제: {stale}")
+
+
 def save_results(results: list[dict]) -> None:
     """검정 결과를 Supabase에 저장한다."""
     sb = get_supabase()
@@ -75,6 +87,9 @@ def main():
 
     df = load_transactions()
     print(f"로드된 거래 데이터: {len(df)}건\n")
+
+    valid_ids = [mod.HYPOTHESIS_ID for mod in HYPOTHESIS_MODULES]
+    cleanup_stale(valid_ids)
 
     results = [mod.run(df) for mod in HYPOTHESIS_MODULES]
 

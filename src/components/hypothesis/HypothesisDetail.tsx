@@ -59,20 +59,26 @@ export default function HypothesisDetail({ hypothesis }: HypothesisDetailProps) 
       {/* 차트 */}
       {chartType === "line" && lineCharts && lineCharts.length > 0 ? (
         <div className="mt-6 space-y-4">
-          {lineCharts.map((panel) => (
-            <div key={panel.title}>
-              <h4 className="mb-1 text-xs font-semibold text-zinc-500">{panel.title}</h4>
-              <ResponsiveContainer width="100%" height={140}>
-                <LineChart data={panel.data}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
-                  <YAxis tick={{ fontSize: 10 }} tickFormatter={formatValue} />
-                  <Tooltip formatter={(v) => formatValue(Number(v))} />
-                  <Line type="monotone" dataKey="value" stroke={panel.color} strokeWidth={2} dot={false} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          ))}
+          {lineCharts.map((panel) => {
+            const values = panel.data.map((d) => d.value);
+            const min = Math.min(...values);
+            const max = Math.max(...values);
+            const padding = Math.max(Math.round((max - min) * 0.1), 1);
+            return (
+              <div key={panel.title}>
+                <h4 className="mb-1 text-xs font-semibold text-zinc-500">{panel.title}</h4>
+                <ResponsiveContainer width="100%" height={140}>
+                  <LineChart data={panel.data}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+                    <YAxis tick={{ fontSize: 10 }} tickFormatter={formatValue} domain={[min - padding, max + padding]} />
+                    <Tooltip formatter={(v) => formatValue(Number(v))} />
+                    <Line type="monotone" dataKey="value" stroke={panel.color} strokeWidth={2} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            );
+          })}
         </div>
       ) : chartData.length > 0 ? (
         <div className="mt-6">
@@ -90,34 +96,37 @@ export default function HypothesisDetail({ hypothesis }: HypothesisDetailProps) 
         </div>
       ) : null}
 
-      {/* 검정 결과 */}
-      <div className={`mt-6 rounded-md border p-4 ${RESULT_STYLE[result]}`}>
-        <h4 className="text-sm font-semibold text-zinc-700">검정 결과</h4>
-        <p className="mt-1 text-sm text-zinc-600">{RESULT_TEXT[result]}</p>
-        <div className="mt-2 flex flex-wrap gap-4 text-xs text-zinc-500">
-          <span>p-value: <strong>{pValue.toFixed(4)}</strong></span>
-          <span>검정통계량: <strong>{testStat.toFixed(4)}</strong></span>
-          <span>유의수준: 0.05</span>
-        </div>
-      </div>
-
-      {/* 상세 정보 */}
-      {details && Object.keys(details).length > 0 && (
-        <details className="mt-4">
-          <summary className="cursor-pointer text-xs font-medium text-zinc-400 hover:text-zinc-600">
-            상세 통계 보기
-          </summary>
-          <div className="mt-2 rounded bg-zinc-50 p-3">
-            <dl className="grid grid-cols-2 gap-2 text-xs text-zinc-600">
-              {Object.entries(details).map(([key, value]) => (
-                <div key={key}>
-                  <dt className="font-medium text-zinc-500">{key}</dt>
-                  <dd>{typeof value === "object" ? JSON.stringify(value) : String(value)}</dd>
-                </div>
-              ))}
-            </dl>
+      {/* 검정 결과 — method가 있는 가설만 표시 */}
+      {method && (
+        <>
+          <div className={`mt-6 rounded-md border p-4 ${RESULT_STYLE[result]}`}>
+            <h4 className="text-sm font-semibold text-zinc-700">검정 결과</h4>
+            <p className="mt-1 text-sm text-zinc-600">{RESULT_TEXT[result]}</p>
+            <div className="mt-2 flex flex-wrap gap-4 text-xs text-zinc-500">
+              <span>p-value: <strong>{pValue.toFixed(4)}</strong></span>
+              <span>검정통계량: <strong>{testStat.toFixed(4)}</strong></span>
+              <span>유의수준: 0.05</span>
+            </div>
           </div>
-        </details>
+
+          {details && Object.keys(details).length > 0 && (
+            <details className="mt-4">
+              <summary className="cursor-pointer text-xs font-medium text-zinc-400 hover:text-zinc-600">
+                상세 통계 보기
+              </summary>
+              <div className="mt-2 rounded bg-zinc-50 p-3">
+                <dl className="grid grid-cols-2 gap-2 text-xs text-zinc-600">
+                  {Object.entries(details).map(([key, value]) => (
+                    <div key={key}>
+                      <dt className="font-medium text-zinc-500">{key}</dt>
+                      <dd>{typeof value === "object" ? JSON.stringify(value) : String(value)}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+            </details>
+          )}
+        </>
       )}
     </div>
   );
