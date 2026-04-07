@@ -54,6 +54,8 @@ export interface Hypothesis {
   pValue: number;
   testStat: number;
   chartData: HypothesisChartData[];
+  chartType?: "bar" | "line";
+  lineCharts?: LineChartPanel[];
   details: Record<string, unknown>;
 }
 
@@ -61,6 +63,12 @@ export interface HypothesisChartData {
   label: string;
   groupA: number;
   groupB: number;
+}
+
+export interface LineChartPanel {
+  title: string;
+  color: string;
+  data: { date: string; value: number }[];
 }
 
 // 지도용 GeoJSON

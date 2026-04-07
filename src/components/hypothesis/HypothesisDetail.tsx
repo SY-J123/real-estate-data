@@ -3,6 +3,8 @@
 import {
   BarChart,
   Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -34,8 +36,13 @@ const METHOD_LABELS: Record<string, string> = {
   "Pearson correlation": "피어슨 상관분석",
 };
 
+function formatValue(v: number) {
+  if (v >= 10000) return `${(v / 10000).toFixed(0)}만`;
+  return v.toLocaleString();
+}
+
 export default function HypothesisDetail({ hypothesis }: HypothesisDetailProps) {
-  const { title, description, method, result, pValue, testStat, chartData, details } = hypothesis;
+  const { title, description, method, result, pValue, testStat, chartData, chartType, lineCharts, details } = hypothesis;
 
   return (
     <div className="rounded-lg border border-zinc-200 bg-white p-6">
@@ -50,7 +57,24 @@ export default function HypothesisDetail({ hypothesis }: HypothesisDetailProps) 
       </div>
 
       {/* 차트 */}
-      {chartData.length > 0 && (
+      {chartType === "line" && lineCharts && lineCharts.length > 0 ? (
+        <div className="mt-6 space-y-4">
+          {lineCharts.map((panel) => (
+            <div key={panel.title}>
+              <h4 className="mb-1 text-xs font-semibold text-zinc-500">{panel.title}</h4>
+              <ResponsiveContainer width="100%" height={140}>
+                <LineChart data={panel.data}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={formatValue} />
+                  <Tooltip formatter={(v) => formatValue(Number(v))} />
+                  <Line type="monotone" dataKey="value" stroke={panel.color} strokeWidth={2} dot={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          ))}
+        </div>
+      ) : chartData.length > 0 ? (
         <div className="mt-6">
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={chartData}>
@@ -64,7 +88,7 @@ export default function HypothesisDetail({ hypothesis }: HypothesisDetailProps) 
             </BarChart>
           </ResponsiveContainer>
         </div>
-      )}
+      ) : null}
 
       {/* 검정 결과 */}
       <div className={`mt-6 rounded-md border p-4 ${RESULT_STYLE[result]}`}>

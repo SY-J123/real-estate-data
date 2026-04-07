@@ -85,17 +85,22 @@ export async function fetchHypotheses(): Promise<Hypothesis[]> {
 
   if (error) throw new Error(error.message);
 
-  return (data ?? []).map((row) => ({
-    id: row.id,
-    title: row.title,
-    description: row.description,
-    method: row.method,
-    result: row.result,
-    pValue: row.p_value,
-    testStat: row.test_stat,
-    chartData: typeof row.chart_data === "string" ? JSON.parse(row.chart_data) : row.chart_data,
-    details: typeof row.details === "string" ? JSON.parse(row.details) : row.details,
-  }));
+  return (data ?? []).map((row) => {
+    const details = typeof row.details === "string" ? JSON.parse(row.details) : row.details;
+    return {
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      method: row.method,
+      result: row.result,
+      pValue: row.p_value,
+      testStat: row.test_stat,
+      chartData: typeof row.chart_data === "string" ? JSON.parse(row.chart_data) : row.chart_data,
+      chartType: details?.chart_type ?? "bar",
+      lineCharts: details?.line_charts,
+      details,
+    };
+  });
 }
 
 // 유틸: N개월 전 날짜 (YYYY-MM-DD)
