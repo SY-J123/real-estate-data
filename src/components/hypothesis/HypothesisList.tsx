@@ -14,6 +14,21 @@ const RESULT_BADGE = {
   inconclusive: { label: "불확실", className: "bg-yellow-100 text-yellow-700" },
 } as const;
 
+const METHOD_SHORT: Record<string, string> = {
+  "independent t-test (Welch)": "t-검정",
+  "one-way ANOVA": "ANOVA",
+  "Pearson correlation": "상관분석",
+};
+
+function getMethodTags(method: string): string[] {
+  if (!method) return [];
+  return method
+    .split(",")
+    .map((m) => m.trim())
+    .filter(Boolean)
+    .map((m) => METHOD_SHORT[m] ?? m);
+}
+
 export default function HypothesisList({
   hypotheses,
   selectedId,
@@ -24,6 +39,7 @@ export default function HypothesisList({
       {hypotheses.map((h) => {
         const badge = RESULT_BADGE[h.result];
         const isSelected = h.id === selectedId;
+        const tags = getMethodTags(h.method);
 
         return (
           <button
@@ -45,7 +61,18 @@ export default function HypothesisList({
                 {badge.label}
               </span>
             </div>
-            <p className="mt-1 text-xs text-zinc-500">{h.description}</p>
+            {tags.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500"
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            )}
           </button>
         );
       })}

@@ -17,11 +17,8 @@
       "Bash(gh api:*)",
       "Bash(gh run:*)",
       "Bash(node -e ':*)",
-      "Bash(git -C c:/real-estate-data ls-files data/seoul_household.csv)",
-      "Bash(/c/Users/siyoung/AppData/Local/Programs/Python/Python312/python.exe -c \"import supabase; print\\('ok'\\)\")",
-      "Read(//c//**)",
-      "Bash(/c/Users/siyoung/AppData/Local/Programs/Python/Python312/python.exe -m pip install supabase)",
-      "Bash(ls -la /c/real-estate-data/scripts/hypotheses/*.py)"
+      "Bash(npx vercel:*)",
+      "Bash(npx plugins:*)"
     ]
   }
 }

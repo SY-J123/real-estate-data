@@ -59,6 +59,16 @@ export default function DashboardPage() {
           <PriceChart districtData={districtData} metric={filter.metric} />
         </div>
       )}
+
+      <footer className="border-t border-zinc-200 pt-4 text-xs text-zinc-400">
+        <p>데이터 출처: 국토교통부 실거래가 공개시스템 (아파트 매매/전월세 실거래가)</p>
+        <p className="mt-1">
+          <a href="https://apis.data.go.kr/1613000/RTMSDataSvcAptTradeDev" className="underline hover:text-zinc-600" target="_blank" rel="noopener noreferrer">매매 실거래가 API</a>
+          {" / "}
+          <a href="https://apis.data.go.kr/1613000/RTMSDataSvcAptRent" className="underline hover:text-zinc-600" target="_blank" rel="noopener noreferrer">전월세 실거래가 API</a>
+        </p>
+        <p className="mt-2">&copy; {new Date().getFullYear()} Siyoung. All rights reserved.</p>
+      </footer>
     </div>
   );
 }

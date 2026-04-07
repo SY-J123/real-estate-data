@@ -1,0 +1,81 @@
+name: Backfill Historical Data
+
+on:
+  workflow_dispatch:
+    inputs:
+      start_year:
+        description: "시작 연도 (예: 2021)"
+        default: "2021"
+      end_year:
+        description: "종료 연도 (예: 2026)"
+        default: "2026"
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    outputs:
+      months: ${{ steps.calc.outputs.months }}
+    steps:
+      - id: calc
+        run: |
+          start=${{ github.event.inputs.start_year }}
+          end=${{ github.event.inputs.end_year }}
+          months="["
+          for y in $(seq $start $end); do
+            for m in $(seq -w 1 12); do
+              ym="${y}${m}"
+              if [ "$ym" -le "$(date +%Y%m)" ]; then
+                months="${months}\"${ym}\","
+              fi
+            done
+          done
+          months="${months%,}]"
+          echo "months=$months" >> "$GITHUB_OUTPUT"
+
+  collect:
+    needs: generate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        ym: ${{ fromJSON(needs.generate.outputs.months) }}
+      max-parallel: 5
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r scripts/requirements.txt
+
+      - name: Collect ${{ matrix.ym }}
+        env:
+          PUBLIC_DATA_API_KEY: ${{ secrets.PUBLIC_DATA_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          COLLECT_YM: ${{ matrix.ym }}
+        run: python scripts/collect_data.py
+
+  hypothesis:
+    needs: collect
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r scripts/requirements.txt
+
+      - name: Run hypothesis tests
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: cd scripts && python run_hypothesis.py

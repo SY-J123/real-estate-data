@@ -161,6 +161,33 @@ def parse_rent_item(item: dict, district_code: str) -> dict | None:
         return None
 
 
+def collect_single_month(deal_ym: str) -> list[dict]:
+    """특정 연월 1개월치만 수집한다."""
+    all_rows = []
+    total = len(DISTRICT_CODES) * 2
+    count = 0
+
+    for code, gu in DISTRICT_CODES.items():
+        count += 1
+        print(f"[{count}/{total}] 매매 {gu} {deal_ym}")
+        for item in fetch_transactions("매매", code, deal_ym):
+            row = parse_trade_item(item, code)
+            if row:
+                all_rows.append(row)
+
+        count += 1
+        print(f"[{count}/{total}] 전세 {gu} {deal_ym}")
+        for item in fetch_transactions("전세", code, deal_ym):
+            row = parse_rent_item(item, code)
+            if row:
+                all_rows.append(row)
+
+        time.sleep(0.3)
+
+    print(f"\n수집 완료: {len(all_rows)}건")
+    return all_rows
+
+
 def collect_all(months_back: int = 12) -> list[dict]:
     """최근 N개월 데이터를 전체 수집한다."""
     all_rows = []
@@ -273,10 +300,15 @@ def main():
         print("ERROR: SUPABASE_URL / SUPABASE_SERVICE_KEY 환경변수가 설정되지 않았습니다.")
         sys.exit(1)
 
-    months = int(os.environ.get("COLLECT_MONTHS", "12"))
-    print(f"=== 데이터 수집 시작 (최근 {months}개월) ===\n")
-
-    rows = collect_all(months)
+    # 특정 연월 지정 시 해당 월만 수집 (예: "202301")
+    single_ym = os.environ.get("COLLECT_YM", "")
+    if single_ym:
+        print(f"=== 데이터 수집 시작 ({single_ym}) ===\n")
+        rows = collect_single_month(single_ym)
+    else:
+        months = int(os.environ.get("COLLECT_MONTHS", "1"))
+        print(f"=== 데이터 수집 시작 (최근 {months}개월) ===\n")
+        rows = collect_all(months)
     if rows:
         upsert_to_supabase(rows)
     else:
