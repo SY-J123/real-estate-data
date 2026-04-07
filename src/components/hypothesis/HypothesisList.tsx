@@ -1,0 +1,54 @@
+"use client";
+
+import type { Hypothesis } from "@/types";
+
+interface HypothesisListProps {
+  hypotheses: Hypothesis[];
+  selectedId: string | null;
+  onSelect: (id: string) => void;
+}
+
+const RESULT_BADGE = {
+  supported: { label: "지지됨", className: "bg-green-100 text-green-700" },
+  rejected: { label: "기각됨", className: "bg-red-100 text-red-700" },
+  inconclusive: { label: "불확실", className: "bg-yellow-100 text-yellow-700" },
+} as const;
+
+export default function HypothesisList({
+  hypotheses,
+  selectedId,
+  onSelect,
+}: HypothesisListProps) {
+  return (
+    <div className="space-y-3">
+      {hypotheses.map((h) => {
+        const badge = RESULT_BADGE[h.result];
+        const isSelected = h.id === selectedId;
+
+        return (
+          <button
+            key={h.id}
+            onClick={() => onSelect(h.id)}
+            className={`w-full rounded-lg border p-4 text-left transition-colors ${
+              isSelected
+                ? "border-zinc-900 bg-zinc-50"
+                : "border-zinc-200 bg-white hover:border-zinc-300"
+            }`}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <h3 className="text-sm font-semibold text-zinc-800">
+                {h.title}
+              </h3>
+              <span
+                className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${badge.className}`}
+              >
+                {badge.label}
+              </span>
+            </div>
+            <p className="mt-1 text-xs text-zinc-500">{h.description}</p>
+          </button>
+        );
+      })}
+    </div>
+  );
+}

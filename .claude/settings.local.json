@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//real-estate-data/**)",
+      "Read(//c/real-estate-data/**)",
+      "Bash(git -C /c/real-estate-data status)",
+      "Bash(git -C /c/real-estate-data log --oneline -10)",
+      "Bash(git -C /c/real-estate-data diff package.json)",
+      "Bash(npx next:*)",
+      "Bash(curl -sL -o c:/real-estate-data/public/seoul-districts.geojson \"https://raw.githubusercontent.com/southkorea/seoul-maps/master/kostat/2013/json/seoul_municipalities_geo_simple.json\")",
+      "Bash(node -e \"const d=require\\('./public/seoul-districts.geojson'\\); console.log\\(d.features.length, 'districts'\\); d.features.slice\\(0,3\\).forEach\\(f => console.log\\(f.properties\\)\\)\")",
+      "Bash(node -e \"const fs=require\\('fs'\\); const d=JSON.parse\\(fs.readFileSync\\('./public/seoul-districts.geojson','utf8'\\)\\); console.log\\(d.features.length,'districts'\\); d.features.slice\\(0,3\\).forEach\\(f => console.log\\(f.properties\\)\\)\")",
+      "Bash(gh repo:*)",
+      "Bash(gh auth:*)"
+    ]
+  }
+}
