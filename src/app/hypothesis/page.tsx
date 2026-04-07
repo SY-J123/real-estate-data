@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import HypothesisList from "@/components/hypothesis/HypothesisList";
 import HypothesisDetail from "@/components/hypothesis/HypothesisDetail";
+import CommentSection from "@/components/hypothesis/CommentSection";
 import type { Hypothesis } from "@/types";
 
 export default function HypothesisPage() {
@@ -56,7 +57,10 @@ export default function HypothesisPage() {
         </div>
         <div className="lg:col-span-2">
           {selectedHypothesis ? (
-            <HypothesisDetail hypothesis={selectedHypothesis} />
+            <>
+              <HypothesisDetail hypothesis={selectedHypothesis} />
+              <CommentSection hypothesisId={selectedHypothesis.id} />
+            </>
           ) : (
             <div className="flex h-64 items-center justify-center rounded-lg border border-zinc-200 bg-white">
               <span className="text-sm text-zinc-400">

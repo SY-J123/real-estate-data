@@ -108,6 +108,15 @@ export interface ChartGroup {
   lineCharts: LineChartPanel[];
 }
 
+// 댓글
+export interface Comment {
+  id: string;
+  hypothesis_id: string;
+  nickname: string;
+  content: string;
+  created_at: string;
+}
+
 // 지도용 GeoJSON
 export interface SeoulGeoFeature {
   type: "Feature";
