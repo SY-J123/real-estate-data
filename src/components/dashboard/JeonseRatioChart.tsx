@@ -9,7 +9,6 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ReferenceLine,
   ResponsiveContainer,
 } from "recharts";
 import { SEOUL_DISTRICTS, DISTRICT_PRESETS } from "@/constants";
@@ -53,10 +52,6 @@ export default function JeonseRatioChart({
   // 당월 제외 (데이터 불완전)
   const currentMonth = new Date().toISOString().slice(0, 7);
   const filtered = monthlyAvgData.filter((d) => d.month < currentMonth);
-
-  const seoulAvg = filtered.length > 0
-    ? Math.round(filtered.reduce((s, d) => s + d.jeonseRatio, 0) / filtered.length * 10) / 10
-    : 0;
 
   const months = filtered.map((d) => d.month);
   const chartData = months.map((month) => {
@@ -190,12 +185,6 @@ export default function JeonseRatioChart({
               labelFormatter={(label) => `${label}월`}
             />
             <Legend verticalAlign="top" wrapperStyle={{ paddingBottom: 8 }} />
-            <ReferenceLine
-              y={seoulAvg}
-              stroke="#9ca3af"
-              strokeDasharray="4 4"
-              label={{ value: `평균 ${seoulAvg}%`, position: "right", fontSize: 11, fill: "#9ca3af" }}
-            />
             <Line
               dataKey="서울전체"
               stroke="#9ca3af"
