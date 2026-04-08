@@ -5,10 +5,8 @@ transactions.csv 데이터 정제:
 """
 
 import pandas as pd
-import os
 
-BASE_DIR = os.path.join(os.path.dirname(__file__), "..")
-CSV_PATH = os.path.join(BASE_DIR, "data", "transactions.csv")
+from config import CSV_PATH, PRICE_THRESHOLDS
 
 def main():
     df = pd.read_csv(CSV_PATH, encoding="utf-8-sig")
@@ -29,17 +27,19 @@ def main():
 
     df["price_per_pyeong"] = df["price"] / df["area"] * 3.3
 
-    # 매매: 평당가 1,000~15,000 범위 밖 제거
+    # 매매: 평당가 범위 밖 제거
+    t_lo, t_hi = PRICE_THRESHOLDS["매매"]
     trade_mask = df["deal_type"] == "매매"
     trade_outlier = trade_mask & (
-        (df["price_per_pyeong"] < 1000) | (df["price_per_pyeong"] > 15000)
+        (df["price_per_pyeong"] < t_lo) | (df["price_per_pyeong"] > t_hi)
     )
     trade_outlier_count = trade_outlier.sum()
 
-    # 전세: 매매보다 범위가 낮으므로 500~10,000 기준
+    # 전세: 매매보다 범위가 낮음
+    j_lo, j_hi = PRICE_THRESHOLDS["전세"]
     jeonse_mask = df["deal_type"] == "전세"
     jeonse_outlier = jeonse_mask & (
-        (df["price_per_pyeong"] < 500) | (df["price_per_pyeong"] > 10000)
+        (df["price_per_pyeong"] < j_lo) | (df["price_per_pyeong"] > j_hi)
     )
     jeonse_outlier_count = jeonse_outlier.sum()
 

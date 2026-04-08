@@ -1,8 +1,10 @@
 "use client";
 
+import Card from "@/components/ui/Card";
+
 export default function UnsoldChart() {
   return (
-    <div className="relative rounded-lg border border-zinc-200 bg-white p-4">
+    <Card className="relative">
       <h3 className="mb-4 text-sm font-semibold text-zinc-700">
         서울 미분양 현황 (월별)
       </h3>
@@ -15,6 +17,6 @@ export default function UnsoldChart() {
           <p className="mt-1 text-xs text-zinc-400">데이터 확보 후 제공 예정</p>
         </div>
       </div>
-    </div>
+    </Card>
   );
 }

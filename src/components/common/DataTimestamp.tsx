@@ -4,9 +4,8 @@ interface DataTimestampProps {
 
 function formatKST(isoString: string): string {
   const date = new Date(isoString);
-  // DB에 UTC로 저장되지만 timezone 정보가 없으므로 +9시간
-  date.setHours(date.getHours() + 9);
   return date.toLocaleString("ko-KR", {
+    timeZone: "Asia/Seoul",
     year: "numeric",
     month: "long",
     day: "numeric",

@@ -29,54 +29,13 @@ from xml.etree import ElementTree as ET
 
 import requests
 
+from config import (
+    BASE_DIR, CSV_PATH, SEOUL_GU_CODES, CSV_COLUMNS,
+    TRADE_URL, RENT_URL,
+)
 
-BASE_DIR = Path(__file__).resolve().parent.parent
-OUT_PATH = BASE_DIR / "data" / "transactions.csv"
+OUT_PATH = CSV_PATH
 ENV_PATH = BASE_DIR / ".env.local"
-
-TRADE_URL = "https://apis.data.go.kr/1613000/RTMSDataSvcAptTradeDev/getRTMSDataSvcAptTradeDev"
-RENT_URL = "https://apis.data.go.kr/1613000/RTMSDataSvcAptRent/getRTMSDataSvcAptRent"
-
-SEOUL_GU_CODES = {
-    "종로구": "11110",
-    "중구": "11140",
-    "용산구": "11170",
-    "성동구": "11200",
-    "광진구": "11215",
-    "동대문구": "11230",
-    "중랑구": "11260",
-    "성북구": "11290",
-    "강북구": "11305",
-    "도봉구": "11320",
-    "노원구": "11350",
-    "은평구": "11380",
-    "서대문구": "11410",
-    "마포구": "11440",
-    "양천구": "11470",
-    "강서구": "11500",
-    "구로구": "11530",
-    "금천구": "11545",
-    "영등포구": "11560",
-    "동작구": "11590",
-    "관악구": "11620",
-    "서초구": "11650",
-    "강남구": "11680",
-    "송파구": "11710",
-    "강동구": "11740",
-}
-
-CSV_COLUMNS = [
-    "gu",
-    "dong",
-    "apt_name",
-    "area",
-    "floor",
-    "price",
-    "deal_date",
-    "build_year",
-    "deal_type",
-]
-
 
 def load_env_file() -> None:
     if not ENV_PATH.exists():
@@ -114,7 +73,7 @@ def parse_xml_items(text: str) -> list[ET.Element]:
     root = ET.fromstring(text)
     result_code = root.findtext(".//resultCode", default="").strip()
     result_msg = root.findtext(".//resultMsg", default="").strip()
-    if result_code and result_code != "00":
+    if result_code and result_code not in ("00", "000"):
         raise RuntimeError(f"API 오류 {result_code}: {result_msg}")
     return root.findall(".//item")
 
@@ -130,8 +89,15 @@ def request_items(url: str, lawd_cd: str, deal_ymd: str) -> list[ET.Element]:
             "pageNo": str(page),
             "numOfRows": "1000",
         }
-        response = requests.get(url, params=params, timeout=30)
-        response.raise_for_status()
+        for attempt in range(3):
+            try:
+                response = requests.get(url, params=params, timeout=30)
+                response.raise_for_status()
+                break
+            except requests.exceptions.RequestException:
+                if attempt == 2:
+                    raise
+                time.sleep(2 ** (attempt + 1))
         page_items = parse_xml_items(response.text)
         if not page_items:
             break

@@ -10,6 +10,7 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import type { MonthlyAvgData } from "@/types";
+import Card from "@/components/ui/Card";
 
 interface VolumeChartProps {
   monthlyAvgData: MonthlyAvgData[];
@@ -22,7 +23,7 @@ export default function VolumeChart({ monthlyAvgData }: VolumeChartProps) {
   }));
 
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-4">
+    <Card>
       <h3 className="mb-4 text-sm font-semibold text-zinc-700">
         월별 매매 거래량
       </h3>
@@ -52,6 +53,6 @@ export default function VolumeChart({ monthlyAvgData }: VolumeChartProps) {
           </BarChart>
         </ResponsiveContainer>
       )}
-    </div>
+    </Card>
   );
 }
