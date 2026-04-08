@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { fetchDistrictData, fetchMonthlyAvg, fetchLastUpdated } from "@/lib/api";
+import { fetchDistrictData, fetchMonthlyAvg, fetchMonthlyByGu, fetchLastUpdated } from "@/lib/api";
 import { BASE_RATE_INFO } from "@/lib/macro";
-import type { DistrictData, MonthlyAvgData, SummaryStats, FilterState } from "@/types";
+import type { DistrictData, MonthlyAvgData, MonthlyGuRatioData, SummaryStats, FilterState } from "@/types";
 
 interface UseRealEstateDataReturn {
   districtData: DistrictData[];
   monthlyAvgData: MonthlyAvgData[];
+  monthlyByGu: Record<string, MonthlyGuRatioData[]>;
   summaryStats: SummaryStats | null;
   lastUpdated: string | null;
   isLoading: boolean;
@@ -40,9 +41,12 @@ function computeSummaryStats(
     ? Math.round(jeonseDistricts.reduce((s, d) => s + d.avgJeonsePrice, 0) / jeonseDistricts.length)
     : 0;
 
+  const jeonseRatio = avgPrice > 0 ? Number((avgJeonsePrice / avgPrice * 100).toFixed(1)) : 0;
+
   return {
     avgPrice,
     avgJeonsePrice,
+    jeonseRatio,
     oneMonthChange: weightedAvgChangeRate(oneMonth),
     oneYearChange: weightedAvgChangeRate(oneYear),
     transactionCount: totalCount,
@@ -54,6 +58,7 @@ function computeSummaryStats(
 export function useRealEstateData(): UseRealEstateDataReturn {
   const [districtData, setDistrictData] = useState<DistrictData[]>([]);
   const [monthlyAvgData, setMonthlyAvgData] = useState<MonthlyAvgData[]>([]);
+  const [monthlyByGu, setMonthlyByGu] = useState<Record<string, MonthlyGuRatioData[]>>({});
   const [summaryStats, setSummaryStats] = useState<SummaryStats | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -69,9 +74,10 @@ export function useRealEstateData(): UseRealEstateDataReturn {
     setError(null);
 
     try {
-      const [districts, monthly, updated] = await Promise.all([
+      const [districts, monthly, byGu, updated] = await Promise.all([
         fetchDistrictData(filter.months, filter.area),
         fetchMonthlyAvg(60),
+        fetchMonthlyByGu(60),
         fetchLastUpdated(),
       ]);
       const [oneMonth, oneYear] = await Promise.all([
@@ -81,6 +87,7 @@ export function useRealEstateData(): UseRealEstateDataReturn {
 
       setDistrictData(districts);
       setMonthlyAvgData(monthly);
+      setMonthlyByGu(byGu);
       setLastUpdated(updated);
       setSummaryStats(computeSummaryStats(districts, oneMonth, oneYear));
     } catch (err) {
@@ -97,6 +104,7 @@ export function useRealEstateData(): UseRealEstateDataReturn {
   return {
     districtData,
     monthlyAvgData,
+    monthlyByGu,
     summaryStats,
     lastUpdated,
     isLoading,

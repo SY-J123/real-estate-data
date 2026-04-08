@@ -8,6 +8,7 @@ export interface DistrictData {
   avgJeonsePrice: number;
   prevAvgJeonsePrice: number;
   jeonseChangeRate: number; // 전세가 증감률 (%)
+  jeonseRatio: number; // 전세가율 (%) = 전세 평당가 / 매매 평당가 * 100
 }
 
 // 동 단위 데이터
@@ -21,6 +22,7 @@ export interface DongData {
   avgJeonsePrice: number;
   prevAvgJeonsePrice: number;
   jeonseChangeRate: number;
+  jeonseRatio: number;
 }
 
 // 개별 거래 데이터
@@ -48,10 +50,11 @@ export interface FilterState {
 }
 
 // 지표 타입
-export type MetricType = "price" | "jeonse";
+export type MetricType = "price" | "jeonse" | "jeonseRatio";
 
-// metric에 따른 증감률 선택
+// metric에 따른 대표값 선택
 export function getChangeRate(d: DistrictData | DongData, metric: MetricType): number {
+  if (metric === "jeonseRatio") return d.jeonseRatio;
   if (metric === "jeonse") return d.jeonseChangeRate;
   return d.changeRate;
 }
@@ -63,6 +66,7 @@ export interface SummaryStats {
   oneMonthChange: number;   // 최근 1개월 상승률 (%)
   oneYearChange: number;    // 최근 1년 상승률 (%)
   transactionCount: number; // 매매 거래량
+  jeonseRatio: number;      // 서울 평균 전세가율 (%)
   baseRate: number;         // 한국은행 기준금리 (%)
   baseRateDate: string;     // 기준금리 최근 결정일 (YYYY-MM-DD)
 }
@@ -70,9 +74,26 @@ export interface SummaryStats {
 // 서울 전체 월별 평균 평당가 + 거래량
 export interface MonthlyAvgData {
   month: string; // YYYY-MM
-  avgPrice: number; // 만원/평
+  avgPrice: number; // 매매 평당가 (만원/평)
   count: number; // 매매 거래 건수
+  avgJeonsePrice: number; // 전세 평당가 (만원/평)
+  jeonseCount: number; // 전세 거래 건수
+  jeonseRatio: number; // 전세가율 (%)
 }
+
+// 구별 월별 평당가 + 전세가율
+export interface MonthlyGuData {
+  month: string;
+  avgPrice: number;       // 매매 평당가 (만원/평)
+  avgJeonsePrice: number; // 전세 평당가 (만원/평)
+  jeonseRatio: number;
+}
+
+/** @deprecated Use MonthlyGuData instead */
+export type MonthlyGuRatioData = MonthlyGuData;
+
+// 차트 타입
+export type ChartType = "bar" | "line" | "overlay" | "multi_overlay";
 
 // 가설 검정
 export interface Hypothesis {
@@ -84,7 +105,7 @@ export interface Hypothesis {
   pValue: number;
   testStat: number;
   chartData: HypothesisChartData[];
-  chartType?: "bar" | "line" | "overlay" | "multi_overlay";
+  chartType?: ChartType;
   lineCharts?: LineChartPanel[];
   chartGroups?: ChartGroup[];
   details: Record<string, unknown>;
@@ -106,6 +127,20 @@ export interface LineChartPanel {
 export interface ChartGroup {
   title: string;
   lineCharts: LineChartPanel[];
+}
+
+// 오류 제보
+export type ReportCategory = "price" | "missing" | "duplicate" | "other";
+export type ReportStatus = "pending" | "resolved";
+
+export interface Report {
+  id: string;
+  gu: string;
+  category: ReportCategory;
+  nickname: string;
+  content: string;
+  status: ReportStatus;
+  created_at: string;
 }
 
 // 댓글

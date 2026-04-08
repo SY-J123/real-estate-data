@@ -1,4 +1,4 @@
-import type { DistrictData, DongData, MonthlyAvgData, AreaType } from "@/types";
+import type { DistrictData, DongData, MonthlyAvgData, MonthlyGuData, AreaType } from "@/types";
 
 // 정적 JSON 캐시 (한 번만 fetch)
 let dashboardCache: DashboardJSON | null = null;
@@ -8,6 +8,7 @@ interface DashboardJSON {
   districtSummary: Record<string, DistrictData[]>;
   dongSummary: Record<string, DongData[]>;
   monthlyAvg: Record<string, MonthlyAvgData[]>;
+  monthlyByGu: Record<string, Record<string, MonthlyGuData[]>>;
 }
 
 async function getDashboard(): Promise<DashboardJSON> {
@@ -34,6 +35,12 @@ export async function fetchDongData(months: number, area: AreaType = "all"): Pro
 export async function fetchMonthlyAvg(months: number): Promise<MonthlyAvgData[]> {
   const dashboard = await getDashboard();
   return dashboard.monthlyAvg[String(months)] ?? [];
+}
+
+// 구별 월별 평당가 + 전세가율 조회
+export async function fetchMonthlyByGu(months: number): Promise<Record<string, MonthlyGuData[]>> {
+  const dashboard = await getDashboard();
+  return dashboard.monthlyByGu[String(months)] ?? {};
 }
 
 // 데이터 최종 업데이트 시각 조회

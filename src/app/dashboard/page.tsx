@@ -8,7 +8,8 @@ import SummaryCards from "@/components/dashboard/SummaryCards";
 import GainersLosers from "@/components/dashboard/GainersLosers";
 import PriceChart from "@/components/dashboard/PriceChart";
 import VolumeChart from "@/components/dashboard/VolumeChart";
-import UnsoldChart from "@/components/dashboard/UnsoldChart";
+import JeonseRatioChart from "@/components/dashboard/JeonseRatioChart";
+import ReportSection from "@/components/dashboard/ReportSection";
 
 const SeoulMap = dynamic(() => import("@/components/dashboard/SeoulMap"), {
   ssr: false,
@@ -23,6 +24,7 @@ export default function DashboardPage() {
   const {
     districtData,
     monthlyAvgData,
+    monthlyByGu,
     summaryStats,
     lastUpdated,
     isLoading,
@@ -60,9 +62,10 @@ export default function DashboardPage() {
             districtData={districtData}
             metric={filter.metric}
           />
-          <PriceChart monthlyAvgData={monthlyAvgData} />
+          <PriceChart monthlyAvgData={monthlyAvgData} monthlyByGu={monthlyByGu} />
+          <JeonseRatioChart monthlyAvgData={monthlyAvgData} monthlyByGu={monthlyByGu} />
           <VolumeChart monthlyAvgData={monthlyAvgData} />
-          <UnsoldChart />
+          <ReportSection />
         </div>
       )}
 

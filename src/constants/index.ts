@@ -10,6 +10,7 @@ export const MONTHS_OPTIONS = [
 export const METRIC_OPTIONS = [
   { value: "price", label: "실거래가" },
   { value: "jeonse", label: "전세가" },
+  { value: "jeonseRatio", label: "전세가율" },
 ] as const;
 
 export const SEOUL_DISTRICTS = [
@@ -34,6 +35,14 @@ export const AREA_RANGES = {
   medium: { min: 60, max: 85 },
   large: { min: 85, max: 9999 },
 } as const;
+
+// 구 프리셋 그룹 (관심지역 숏컷)
+export const DISTRICT_PRESETS = [
+  { label: "강남3구", districts: ["강남구", "서초구", "송파구"] },
+  { label: "마용성", districts: ["마포구", "용산구", "성동구"] },
+  { label: "노도강", districts: ["노원구", "도봉구", "강북구"] },
+  { label: "금관구", districts: ["금천구", "관악구", "구로구"] },
+] as const;
 
 export const RANKING_DISPLAY_COUNT = 5;
 

@@ -23,7 +23,7 @@ export default function SeoulMap({ districtData, metric }: SeoulMapProps) {
       .catch(console.error);
   }, []);
 
-  const getColor = (changeRate: number): string => {
+  const getChangeColor = (changeRate: number): string => {
     if (changeRate > 5) return "#dc2626";
     if (changeRate > 2) return "#f87171";
     if (changeRate > 0) return "#fca5a5";
@@ -32,13 +32,24 @@ export default function SeoulMap({ districtData, metric }: SeoulMapProps) {
     return "#2563eb";
   };
 
+  const getRatioColor = (ratio: number): string => {
+    if (ratio >= 70) return "#7c3aed";
+    if (ratio >= 60) return "#8b5cf6";
+    if (ratio >= 55) return "#a78bfa";
+    if (ratio >= 50) return "#c4b5fd";
+    if (ratio >= 45) return "#ddd6fe";
+    return "#ede9fe";
+  };
+
+  const isRatio = metric === "jeonseRatio";
+
   const style = (feature: GeoJSON.Feature | undefined) => {
     const name = feature?.properties?.name ?? "";
     const district = districtData.find((d) => d.gu === name);
     const rate = district ? getChangeRate(district, metric) : 0;
 
     return {
-      fillColor: getColor(rate),
+      fillColor: isRatio ? getRatioColor(rate) : getChangeColor(rate),
       weight: 1,
       opacity: 1,
       color: "#fff",
@@ -52,10 +63,12 @@ export default function SeoulMap({ districtData, metric }: SeoulMapProps) {
 
     if (district) {
       const districtRate = getChangeRate(district, metric);
-      const sign = districtRate > 0 ? "+" : "";
+      const label = isRatio
+        ? `전세가율 ${districtRate.toFixed(1)}%`
+        : `${districtRate > 0 ? "+" : ""}${districtRate.toFixed(1)}%`;
 
       layer.bindTooltip(
-        `<strong>${name}</strong> ${sign}${districtRate.toFixed(1)}%`,
+        `<strong>${name}</strong> ${label}`,
         { sticky: true }
       );
     }
@@ -86,17 +99,27 @@ export default function SeoulMap({ districtData, metric }: SeoulMapProps) {
 
       {/* 범례 */}
       <div className="flex items-center justify-center gap-2 border-t border-zinc-200 bg-white px-4 py-2">
-        <span className="text-xs text-zinc-500">하락</span>
-        {["#2563eb", "#60a5fa", "#93c5fd", "#fca5a5", "#f87171", "#dc2626"].map(
-          (color) => (
-            <div
-              key={color}
-              className="h-4 w-8 rounded"
-              style={{ backgroundColor: color }}
-            />
-          )
+        {isRatio ? (
+          <>
+            <span className="text-xs text-zinc-500">낮음</span>
+            {["#ede9fe", "#ddd6fe", "#c4b5fd", "#a78bfa", "#8b5cf6", "#7c3aed"].map(
+              (color) => (
+                <div key={color} className="h-4 w-8 rounded" style={{ backgroundColor: color }} />
+              )
+            )}
+            <span className="text-xs text-zinc-500">높음</span>
+          </>
+        ) : (
+          <>
+            <span className="text-xs text-zinc-500">하락</span>
+            {["#2563eb", "#60a5fa", "#93c5fd", "#fca5a5", "#f87171", "#dc2626"].map(
+              (color) => (
+                <div key={color} className="h-4 w-8 rounded" style={{ backgroundColor: color }} />
+              )
+            )}
+            <span className="text-xs text-zinc-500">상승</span>
+          </>
         )}
-        <span className="text-xs text-zinc-500">상승</span>
       </div>
     </div>
   );

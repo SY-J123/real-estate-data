@@ -1,23 +1,10 @@
 "use client";
 
 import type { SummaryStats } from "@/types";
+import { formatPrice, formatDate } from "@/lib/format";
 
 interface SummaryCardsProps {
   stats: SummaryStats | null;
-}
-
-function formatDate(value: string): string {
-  return value.replaceAll("-", ".");
-}
-
-function formatPrice(value: number): string {
-  if (value >= 10000) {
-    const eok = Math.floor(value / 10000);
-    const remainder = Math.round(value % 10000);
-    if (remainder === 0) return `${eok}억`;
-    return `${eok}억 ${remainder.toLocaleString()}만`;
-  }
-  return `${value.toLocaleString()}만`;
 }
 
 function formatChange(value: number): { text: string; color: string } {
@@ -57,7 +44,7 @@ export default function SummaryCards({ stats }: SummaryCardsProps) {
   const oneYear = formatChange(stats.oneYearChange);
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7">
       <Card
         label="서울 평균 매매 평당가"
         value={formatPrice(stats.avgPrice)}
@@ -84,6 +71,11 @@ export default function SummaryCards({ stats }: SummaryCardsProps) {
         label="매매 거래량"
         value={`${stats.transactionCount.toLocaleString()}건`}
         sub="선택 기간 내"
+      />
+      <Card
+        label="서울 평균 전세가율"
+        value={`${stats.jeonseRatio.toFixed(1)}%`}
+        sub="전세 평당가 / 매매 평당가"
       />
       <Card
         label="한국은행 기준금리"

@@ -11,17 +11,9 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 
-BASE_DIR = os.path.join(os.path.dirname(__file__), "..")
-CSV_PATH = os.path.join(BASE_DIR, "data", "transactions.csv")
-OUT_PATH = os.path.join(BASE_DIR, "public", "data", "dashboard.json")
+from config import BASE_DIR, CSV_PATH, OUTPUT_DIR, MONTHS_OPTIONS, AREA_RANGES
 
-MONTHS_OPTIONS = [1, 3, 6, 12, 36, 60]
-AREA_RANGES = {
-    "all": (0, 9999),
-    "small": (0, 60),
-    "medium": (60, 85),
-    "large": (85, 9999),
-}
+OUT_PATH = os.path.join(OUTPUT_DIR, "dashboard.json")
 
 
 def load_transactions() -> pd.DataFrame:
@@ -90,6 +82,8 @@ def compute_district_summary(
         j_prev = round(row["prevAvgJeonsePrice"])
         j_change = round((j_avg - j_prev) / j_prev * 100, 1) if j_prev > 0 else 0
 
+        jeonse_ratio = round(j_avg / avg * 100, 1) if avg > 0 else 0
+
         result.append({
             "gu": gu,
             "avgPrice": avg,
@@ -99,6 +93,7 @@ def compute_district_summary(
             "avgJeonsePrice": j_avg,
             "prevAvgJeonsePrice": j_prev,
             "jeonseChangeRate": j_change,
+            "jeonseRatio": jeonse_ratio,
         })
 
     return sorted(result, key=lambda x: x["gu"])
@@ -135,6 +130,8 @@ def compute_dong_summary(
         j_prev = round(row["prevAvgJeonsePrice"])
         j_change = round((j_avg - j_prev) / j_prev * 100, 1) if j_prev > 0 else 0
 
+        jeonse_ratio = round(j_avg / avg * 100, 1) if avg > 0 else 0
+
         result.append({
             "gu": gu,
             "dong": dong,
@@ -145,28 +142,85 @@ def compute_dong_summary(
             "avgJeonsePrice": j_avg,
             "prevAvgJeonsePrice": j_prev,
             "jeonseChangeRate": j_change,
+            "jeonseRatio": jeonse_ratio,
         })
 
     return sorted(result, key=lambda x: (x["gu"], x["dong"]))
 
 
 def compute_monthly_avg(df: pd.DataFrame, months: int) -> list[dict]:
-    """월별 서울 전체 평균 매매 평당가 + 거래량."""
+    """월별 서울 전체 평균 매매/전세 평당가 + 거래량."""
     from_date = date_months_ago(months)
-    trades = df[(df["deal_type"] == "매매") & (df["deal_date"] >= from_date)].copy()
-    if trades.empty:
+    period = df[df["deal_date"] >= from_date].copy()
+    if period.empty:
         return []
 
-    trades["month"] = trades["deal_date"].dt.strftime("%Y-%m")
-    monthly = trades.groupby("month").agg(
+    period["month"] = period["deal_date"].dt.strftime("%Y-%m")
+
+    trades = period[period["deal_type"] == "매매"]
+    jeonse = period[period["deal_type"] == "전세"]
+
+    t_monthly = trades.groupby("month").agg(
         avgPrice=("price_per_pyeong", "mean"),
         count=("price_per_pyeong", "count"),
-    ).sort_index()
+    )
+    j_monthly = jeonse.groupby("month").agg(
+        avgJeonsePrice=("price_per_pyeong", "mean"),
+        jeonseCount=("price_per_pyeong", "count"),
+    )
 
-    return [
-        {"month": m, "avgPrice": round(row["avgPrice"]), "count": int(row["count"])}
-        for m, row in monthly.iterrows()
-    ]
+    monthly = t_monthly.join(j_monthly, how="outer").fillna(0).sort_index()
+
+    result = []
+    for m, row in monthly.iterrows():
+        avg = round(row["avgPrice"])
+        j_avg = round(row["avgJeonsePrice"])
+        jeonse_ratio = round(j_avg / avg * 100, 1) if avg > 0 else 0
+        result.append({
+            "month": m,
+            "avgPrice": avg,
+            "count": int(row["count"]),
+            "avgJeonsePrice": j_avg,
+            "jeonseCount": int(row["jeonseCount"]),
+            "jeonseRatio": jeonse_ratio,
+        })
+    return result
+
+
+def compute_monthly_by_gu(df: pd.DataFrame, months: int) -> dict[str, list[dict]]:
+    """구별 월별 평당가/전세가율 추이. {gu: [{month, avgPrice, avgJeonsePrice, jeonseRatio}, ...]}"""
+    from_date = date_months_ago(months)
+    period = df[df["deal_date"] >= from_date].copy()
+    if period.empty:
+        return {}
+
+    period["month"] = period["deal_date"].dt.strftime("%Y-%m")
+
+    trades = period[period["deal_type"] == "매매"]
+    jeonse = period[period["deal_type"] == "전세"]
+
+    t_agg = trades.groupby(["gu", "month"])["price_per_pyeong"].mean()
+    j_agg = jeonse.groupby(["gu", "month"])["price_per_pyeong"].mean()
+
+    result: dict[str, list[dict]] = {}
+    for gu in sorted(period["gu"].unique()):
+        months_list = []
+        t_gu = t_agg.loc[gu] if gu in t_agg.index else pd.Series(dtype=float)
+        j_gu = j_agg.loc[gu] if gu in j_agg.index else pd.Series(dtype=float)
+        all_months = sorted(set(t_gu.index) | set(j_gu.index))
+        for m in all_months:
+            avg = round(t_gu.get(m, 0))
+            j_avg = round(j_gu.get(m, 0))
+            ratio = round(j_avg / avg * 100, 1) if avg > 0 else 0
+            months_list.append({
+                "month": m,
+                "avgPrice": avg,
+                "avgJeonsePrice": j_avg,
+                "jeonseRatio": ratio,
+            })
+        result[gu] = months_list
+
+    return result
 
 
 def main():
@@ -180,6 +234,7 @@ def main():
         "districtSummary": {},
         "dongSummary": {},
         "monthlyAvg": {},
+        "monthlyByGu": {},
     }
 
     for months in MONTHS_OPTIONS:
@@ -202,6 +257,7 @@ def main():
 
         # 월별 평균은 area 무관 (전체 면적)
         dashboard["monthlyAvg"][str(months)] = compute_monthly_avg(df, months)
+        dashboard["monthlyByGu"][str(months)] = compute_monthly_by_gu(df, months)
 
     os.makedirs(os.path.dirname(OUT_PATH), exist_ok=True)
     with open(OUT_PATH, "w", encoding="utf-8") as f:
