@@ -38,14 +38,14 @@ export default function CommentForm({ onSubmit }: CommentFormProps) {
           value={nickname}
           onChange={(e) => setNickname(e.target.value)}
           maxLength={20}
-          className="w-32 rounded-md border border-zinc-200 px-3 py-1.5 text-sm outline-none focus:border-zinc-400"
+          className="w-32 rounded-md border border-border-default px-3 py-1.5 text-sm outline-none focus:border-border-focus"
         />
         <input
           type="password"
           placeholder="비밀번호"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-32 rounded-md border border-zinc-200 px-3 py-1.5 text-sm outline-none focus:border-zinc-400"
+          className="w-32 rounded-md border border-border-default px-3 py-1.5 text-sm outline-none focus:border-border-focus"
         />
       </div>
       <div className="flex gap-2">
@@ -55,17 +55,17 @@ export default function CommentForm({ onSubmit }: CommentFormProps) {
           value={content}
           onChange={(e) => setContent(e.target.value)}
           maxLength={500}
-          className="flex-1 rounded-md border border-zinc-200 px-3 py-1.5 text-sm outline-none focus:border-zinc-400"
+          className="flex-1 rounded-md border border-border-default px-3 py-1.5 text-sm outline-none focus:border-border-focus"
         />
         <button
           type="submit"
           disabled={isSubmitting || !nickname.trim() || !password.trim() || !content.trim()}
-          className="rounded-md bg-zinc-900 px-4 py-1.5 text-sm font-medium text-white transition-colors hover:bg-zinc-800 disabled:opacity-40"
+          className="rounded-md bg-btn-primary px-4 py-1.5 text-sm font-medium text-text-inverse transition-colors hover:bg-btn-primary-hover disabled:opacity-40"
         >
           등록
         </button>
       </div>
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-xs text-accent-red">{error}</p>}
     </form>
   );
 }

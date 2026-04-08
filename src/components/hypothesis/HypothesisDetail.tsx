@@ -45,13 +45,13 @@ export default function HypothesisDetail({ hypothesis }: HypothesisDetailProps) 
   const { title, description, method, result, pValue, testStat, chartData, chartType, lineCharts, chartGroups, details } = hypothesis;
 
   return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-6">
-      <h2 className="text-lg font-bold text-zinc-900">{title}</h2>
-      <p className="mt-2 text-sm text-zinc-600">{description}</p>
+    <div className="rounded-lg border border-border-default bg-bg-card p-6">
+      <h2 className="text-lg font-bold text-text-primary">{title}</h2>
+      <p className="mt-2 text-sm text-text-tertiary">{description}</p>
 
       {/* 검정 방법 */}
       <div className="mt-4 flex items-center gap-2">
-        <span className="rounded bg-zinc-100 px-2 py-1 text-xs font-medium text-zinc-600">
+        <span className="rounded bg-bg-muted px-2 py-1 text-xs font-medium text-text-tertiary">
           {METHOD_LABELS[method] ?? method}
         </span>
       </div>
@@ -61,7 +61,7 @@ export default function HypothesisDetail({ hypothesis }: HypothesisDetailProps) 
         <div className="mt-6 space-y-6">
           {chartGroups.map((group) => (
             <div key={group.title}>
-              <h4 className="mb-2 text-sm font-semibold text-zinc-700">{group.title}</h4>
+              <h4 className="mb-2 text-sm font-semibold text-text-secondary">{group.title}</h4>
               <ResponsiveContainer width="100%" height={350}>
                 <LineChart data={group.lineCharts[0]?.data.map((d, i) => {
                   const point: Record<string, unknown> = { date: d.date };
@@ -109,7 +109,7 @@ export default function HypothesisDetail({ hypothesis }: HypothesisDetailProps) 
             const padding = Math.max(Math.round((max - min) * 0.1), 1);
             return (
               <div key={panel.title}>
-                <h4 className="mb-1 text-xs font-semibold text-zinc-500">{panel.title}</h4>
+                <h4 className="mb-1 text-xs font-semibold text-text-muted">{panel.title}</h4>
                 <ResponsiveContainer width="100%" height={140}>
                   <LineChart data={panel.data}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -143,9 +143,9 @@ export default function HypothesisDetail({ hypothesis }: HypothesisDetailProps) 
       {pValue > 0 && (
         <>
           <div className={`mt-6 rounded-md border p-4 ${RESULT_STYLE[result]}`}>
-            <h4 className="text-sm font-semibold text-zinc-700">검정 결과</h4>
-            <p className="mt-1 text-sm text-zinc-600">{RESULT_TEXT[result]}</p>
-            <div className="mt-2 flex flex-wrap gap-4 text-xs text-zinc-500">
+            <h4 className="text-sm font-semibold text-text-secondary">검정 결과</h4>
+            <p className="mt-1 text-sm text-text-tertiary">{RESULT_TEXT[result]}</p>
+            <div className="mt-2 flex flex-wrap gap-4 text-xs text-text-muted">
               <span>p-value: <strong>{pValue.toFixed(4)}</strong></span>
               <span>검정통계량: <strong>{testStat.toFixed(4)}</strong></span>
               <span>유의수준: 0.05</span>
@@ -154,14 +154,14 @@ export default function HypothesisDetail({ hypothesis }: HypothesisDetailProps) 
 
           {details && Object.keys(details).length > 0 && (
             <details className="mt-4">
-              <summary className="cursor-pointer text-xs font-medium text-zinc-400 hover:text-zinc-600">
+              <summary className="cursor-pointer text-xs font-medium text-text-faint hover:text-text-tertiary">
                 상세 통계 보기
               </summary>
-              <div className="mt-2 rounded bg-zinc-50 p-3">
-                <dl className="grid grid-cols-2 gap-2 text-xs text-zinc-600">
+              <div className="mt-2 rounded bg-bg-base p-3">
+                <dl className="grid grid-cols-2 gap-2 text-xs text-text-tertiary">
                   {Object.entries(details).map(([key, value]) => (
                     <div key={key}>
-                      <dt className="font-medium text-zinc-500">{key}</dt>
+                      <dt className="font-medium text-text-muted">{key}</dt>
                       <dd>{typeof value === "object" ? JSON.stringify(value) : String(value)}</dd>
                     </div>
                   ))}

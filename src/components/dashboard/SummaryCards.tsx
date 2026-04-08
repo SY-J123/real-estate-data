@@ -11,7 +11,7 @@ function formatChange(value: number): { text: string; color: string } {
   const sign = value > 0 ? "+" : "";
   return {
     text: `${sign}${value.toFixed(1)}%`,
-    color: value > 0 ? "text-red-500" : value < 0 ? "text-blue-500" : "text-zinc-500",
+    color: value > 0 ? "text-accent-red" : value < 0 ? "text-blue-500" : "text-text-muted",
   };
 }
 
@@ -25,11 +25,11 @@ interface CardProps {
 
 function Card({ label, value, sub, subColor, disabled }: CardProps) {
   return (
-    <div className={`relative rounded-lg border border-zinc-200 bg-white p-4 ${disabled ? "opacity-50" : ""}`}>
-      <p className="text-xs text-zinc-500">{label}</p>
-      <p className="mt-1 text-lg font-bold text-zinc-900">{value}</p>
+    <div className={`relative rounded-lg border border-border-default bg-bg-card p-4 ${disabled ? "opacity-50" : ""}`}>
+      <p className="text-xs text-text-muted">{label}</p>
+      <p className="mt-1 text-lg font-bold text-text-primary">{value}</p>
       {sub && (
-        <p className={`mt-0.5 text-xs font-medium ${subColor ?? "text-zinc-400"}`}>
+        <p className={`mt-0.5 text-xs font-medium ${subColor ?? "text-text-faint"}`}>
           {sub}
         </p>
       )}

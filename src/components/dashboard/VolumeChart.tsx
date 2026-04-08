@@ -24,11 +24,11 @@ export default function VolumeChart({ monthlyAvgData }: VolumeChartProps) {
 
   return (
     <Card>
-      <h3 className="mb-4 text-sm font-semibold text-zinc-700">
+      <h3 className="mb-4 text-sm font-semibold text-text-secondary">
         월별 매매 거래량
       </h3>
       {chartData.length === 0 ? (
-        <div className="flex h-[300px] items-center justify-center text-sm text-zinc-400">
+        <div className="flex h-[300px] items-center justify-center text-sm text-text-faint">
           해당 기간 데이터가 없습니다.
         </div>
       ) : (

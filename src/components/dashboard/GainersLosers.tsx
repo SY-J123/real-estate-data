@@ -74,17 +74,17 @@ function RankingCard<T>({
 
   return (
     <Card>
-      <h3 className="mb-3 text-sm font-semibold text-zinc-700">{title}</h3>
+      <h3 className="mb-3 text-sm font-semibold text-text-secondary">{title}</h3>
       <ul className="space-y-2">
         {items.map((item, idx) => {
           const v = getValue(item);
           return (
             <li key={idx} className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-zinc-100 text-xs font-bold text-zinc-500">
+                <span className="flex h-6 w-6 items-center justify-center rounded-full bg-bg-muted text-xs font-bold text-text-muted">
                   {idx + 1}
                 </span>
-                <span className="text-sm text-zinc-800">{formatLabel(item)}</span>
+                <span className="text-sm text-text-primary">{formatLabel(item)}</span>
               </div>
               <span className="text-sm font-semibold" style={{ color }}>
                 {!isAbsolute && v > 0 ? "+" : ""}{v.toFixed(1)}{unit}
@@ -93,7 +93,7 @@ function RankingCard<T>({
           );
         })}
         {items.length === 0 && (
-          <li className="text-sm text-zinc-400">데이터 없음</li>
+          <li className="text-sm text-text-faint">데이터 없음</li>
         )}
       </ul>
     </Card>

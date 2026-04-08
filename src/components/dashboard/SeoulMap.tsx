@@ -76,14 +76,14 @@ export default function SeoulMap({ districtData, metric }: SeoulMapProps) {
 
   if (!geoData) {
     return (
-      <div className="flex h-[500px] items-center justify-center rounded-lg border border-zinc-200 bg-white">
-        <span className="text-sm text-zinc-400">지도 로딩 중...</span>
+      <div className="flex h-[500px] items-center justify-center rounded-lg border border-border-default bg-bg-card">
+        <span className="text-sm text-text-faint">지도 로딩 중...</span>
       </div>
     );
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-zinc-200">
+    <div className="overflow-hidden rounded-lg border border-border-default">
       <MapContainer
         center={MAP_CENTER}
         zoom={MAP_ZOOM}
@@ -98,26 +98,26 @@ export default function SeoulMap({ districtData, metric }: SeoulMapProps) {
       </MapContainer>
 
       {/* 범례 */}
-      <div className="flex items-center justify-center gap-2 border-t border-zinc-200 bg-white px-4 py-2">
+      <div className="flex items-center justify-center gap-2 border-t border-border-default bg-bg-card px-4 py-2">
         {isRatio ? (
           <>
-            <span className="text-xs text-zinc-500">낮음</span>
+            <span className="text-xs text-text-muted">낮음</span>
             {["#ede9fe", "#ddd6fe", "#c4b5fd", "#a78bfa", "#8b5cf6", "#7c3aed"].map(
               (color) => (
                 <div key={color} className="h-4 w-8 rounded" style={{ backgroundColor: color }} />
               )
             )}
-            <span className="text-xs text-zinc-500">높음</span>
+            <span className="text-xs text-text-muted">높음</span>
           </>
         ) : (
           <>
-            <span className="text-xs text-zinc-500">하락</span>
+            <span className="text-xs text-text-muted">하락</span>
             {["#2563eb", "#60a5fa", "#93c5fd", "#fca5a5", "#f87171", "#dc2626"].map(
               (color) => (
                 <div key={color} className="h-4 w-8 rounded" style={{ backgroundColor: color }} />
               )
             )}
-            <span className="text-xs text-zinc-500">상승</span>
+            <span className="text-xs text-text-muted">상승</span>
           </>
         )}
       </div>

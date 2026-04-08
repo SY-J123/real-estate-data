@@ -27,7 +27,7 @@ export default function HypothesisPage() {
   if (isLoading) {
     return (
       <div className="flex flex-1 items-center justify-center py-32">
-        <span className="text-sm text-zinc-400">로딩 중...</span>
+        <span className="text-sm text-text-faint">로딩 중...</span>
       </div>
     );
   }
@@ -35,15 +35,15 @@ export default function HypothesisPage() {
   if (hypotheses.length === 0) {
     return (
       <div className="flex flex-1 items-center justify-center py-32">
-        <p className="text-sm text-zinc-400">가설 검정 결과가 없습니다.</p>
+        <p className="text-sm text-text-faint">가설 검정 결과가 없습니다.</p>
       </div>
     );
   }
 
   return (
     <div className="mx-auto w-full max-w-7xl px-6 py-8">
-      <h1 className="mb-2 text-2xl font-bold text-zinc-900">가설 검정</h1>
-      <p className="mb-8 text-sm text-zinc-500">
+      <h1 className="mb-2 text-2xl font-bold text-text-primary">가설 검정</h1>
+      <p className="mb-8 text-sm text-text-muted">
         부동산 시장에서 흔히 이야기되는 통설들을 실제 거래 데이터와 통계 검정으로 검증합니다.
       </p>
 
@@ -62,8 +62,8 @@ export default function HypothesisPage() {
               <CommentSection hypothesisId={selectedHypothesis.id} />
             </>
           ) : (
-            <div className="flex h-64 items-center justify-center rounded-lg border border-zinc-200 bg-white">
-              <span className="text-sm text-zinc-400">
+            <div className="flex h-64 items-center justify-center rounded-lg border border-border-default bg-bg-card">
+              <span className="text-sm text-text-faint">
                 가설을 선택해주세요.
               </span>
             </div>

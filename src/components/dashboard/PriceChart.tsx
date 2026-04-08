@@ -137,13 +137,13 @@ export default function PriceChart({ monthlyAvgData, monthlyByGu }: PriceChartPr
 
   return (
     <Card>
-      <h3 className="mb-2 text-sm font-semibold text-zinc-700">
+      <h3 className="mb-2 text-sm font-semibold text-text-secondary">
         평균 평당가 — 매매/전세 (월별)
       </h3>
 
       {/* 프리셋 숏컷 */}
       <div className="mb-2 flex flex-wrap items-center gap-1.5">
-        <span className="text-xs font-medium text-zinc-500">프리셋</span>
+        <span className="text-xs font-medium text-text-muted">프리셋</span>
         {DISTRICT_PRESETS.map((p) => {
           const active = p.districts.length === selectedGus.length
             && p.districts.every((d) => selectedGus.includes(d));
@@ -153,8 +153,8 @@ export default function PriceChart({ monthlyAvgData, monthlyByGu }: PriceChartPr
               onClick={() => applyPreset(p.districts)}
               className={`rounded-md px-2 py-0.5 text-xs font-medium transition-colors ${
                 active
-                  ? "bg-zinc-900 text-white"
-                  : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                  ? "bg-btn-primary text-text-inverse"
+                  : "bg-bg-muted text-text-tertiary hover:bg-bg-subtle"
               }`}
             >
               {p.label}
@@ -170,15 +170,15 @@ export default function PriceChart({ monthlyAvgData, monthlyByGu }: PriceChartPr
                 onClick={() => applyPreset(p.districts)}
                 className={`rounded-l-md px-2 py-0.5 text-xs font-medium transition-colors ${
                   active
-                    ? "bg-zinc-900 text-white"
-                    : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                    ? "bg-btn-primary text-text-inverse"
+                    : "bg-bg-muted text-text-tertiary hover:bg-bg-subtle"
                 }`}
               >
                 {p.label}
               </button>
               <button
                 onClick={() => handleDeletePreset(p.label)}
-                className="rounded-r-md bg-zinc-100 px-1 py-0.5 text-xs text-zinc-400 hover:bg-red-100 hover:text-red-500"
+                className="rounded-r-md bg-bg-muted px-1 py-0.5 text-xs text-text-faint hover:bg-accent-red-bg hover:text-accent-red"
                 title="프리셋 삭제"
               >
                 x
@@ -190,14 +190,14 @@ export default function PriceChart({ monthlyAvgData, monthlyByGu }: PriceChartPr
           <>
             <button
               onClick={handleSavePreset}
-              className="rounded-md bg-zinc-50 px-2 py-0.5 text-xs text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600"
+              className="rounded-md bg-bg-base px-2 py-0.5 text-xs text-text-faint hover:bg-bg-muted hover:text-text-tertiary"
               title="현재 선택을 프리셋으로 저장"
             >
               + 저장
             </button>
             <button
               onClick={() => setSelectedGus([])}
-              className="rounded-md px-2 py-0.5 text-xs text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600"
+              className="rounded-md px-2 py-0.5 text-xs text-text-faint hover:bg-bg-muted hover:text-text-tertiary"
             >
               초기화
             </button>
@@ -213,8 +213,8 @@ export default function PriceChart({ monthlyAvgData, monthlyByGu }: PriceChartPr
             onClick={() => toggleGu(gu)}
             className={`rounded-full px-2 py-0.5 text-xs font-medium transition-colors ${
               selectedGus.includes(gu)
-                ? "text-white"
-                : "bg-zinc-50 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600"
+                ? "text-text-inverse"
+                : "bg-bg-base text-text-faint hover:bg-bg-muted hover:text-text-tertiary"
             }`}
             style={
               selectedGus.includes(gu)
@@ -229,7 +229,7 @@ export default function PriceChart({ monthlyAvgData, monthlyByGu }: PriceChartPr
 
       {/* 차트 */}
       {chartData.length === 0 ? (
-        <div className="flex h-[300px] items-center justify-center text-sm text-zinc-400">
+        <div className="flex h-[300px] items-center justify-center text-sm text-text-faint">
           해당 기간 데이터가 없습니다.
         </div>
       ) : (

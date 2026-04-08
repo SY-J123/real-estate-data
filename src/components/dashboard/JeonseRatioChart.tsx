@@ -78,7 +78,7 @@ export default function JeonseRatioChart({
 
   return (
     <Card>
-      <h3 className="mb-3 text-sm font-semibold text-zinc-700">
+      <h3 className="mb-3 text-sm font-semibold text-text-secondary">
         구별 전세가율 추이 (월별)
       </h3>
 
@@ -93,8 +93,8 @@ export default function JeonseRatioChart({
               onClick={() => applyPreset(districts)}
               className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 isActive
-                  ? "bg-violet-600 text-white"
-                  : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                  ? "bg-violet-600 text-text-inverse"
+                  : "bg-bg-muted text-text-tertiary hover:bg-bg-subtle"
               }`}
             >
               {label}
@@ -106,17 +106,17 @@ export default function JeonseRatioChart({
         <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setDropdownOpen((v) => !v)}
-            className="rounded-md border border-zinc-200 bg-white px-2.5 py-1 text-xs font-medium text-zinc-600 hover:bg-zinc-50"
+            className="rounded-md border border-border-default bg-bg-card px-2.5 py-1 text-xs font-medium text-text-tertiary hover:bg-bg-base"
           >
             직접 선택 ({selectedGus.length}구)
-            <span className="ml-1 text-zinc-400">{dropdownOpen ? "▲" : "▼"}</span>
+            <span className="ml-1 text-text-faint">{dropdownOpen ? "▲" : "▼"}</span>
           </button>
           {dropdownOpen && (
-            <div className="absolute left-0 top-full z-20 mt-1 grid max-h-60 w-64 grid-cols-2 gap-0.5 overflow-y-auto rounded-lg border border-zinc-200 bg-white p-2 shadow-lg">
+            <div className="absolute left-0 top-full z-20 mt-1 grid max-h-60 w-64 grid-cols-2 gap-0.5 overflow-y-auto rounded-lg border border-border-default bg-bg-card p-2 shadow-lg">
               {SEOUL_DISTRICTS.map((gu) => (
                 <label
                   key={gu}
-                  className="flex cursor-pointer items-center gap-1.5 rounded px-2 py-1 text-xs hover:bg-zinc-50"
+                  className="flex cursor-pointer items-center gap-1.5 rounded px-2 py-1 text-xs hover:bg-bg-base"
                 >
                   <input
                     type="checkbox"
@@ -138,7 +138,7 @@ export default function JeonseRatioChart({
         {selectedGus.length > 0 && (
           <button
             onClick={() => setSelectedGus([])}
-            className="text-xs text-zinc-400 hover:text-zinc-600"
+            className="text-xs text-text-faint hover:text-text-tertiary"
           >
             초기화
           </button>
@@ -151,7 +151,7 @@ export default function JeonseRatioChart({
           {selectedGus.map((gu) => (
             <span
               key={gu}
-              className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium text-white"
+              className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium text-text-inverse"
               style={{ backgroundColor: GU_COLORS[gu] ?? "#6b7280" }}
             >
               {gu.replace(/구$/, "")}
@@ -162,7 +162,7 @@ export default function JeonseRatioChart({
       )}
 
       {chartData.length === 0 ? (
-        <div className="flex h-[300px] items-center justify-center text-sm text-zinc-400">
+        <div className="flex h-[300px] items-center justify-center text-sm text-text-faint">
           해당 기간 데이터가 없습니다.
         </div>
       ) : (

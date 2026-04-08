@@ -9,8 +9,8 @@ interface HypothesisListProps {
 }
 
 const RESULT_BADGE = {
-  supported: { label: "지지됨", className: "bg-green-100 text-green-700" },
-  rejected: { label: "기각됨", className: "bg-red-100 text-red-700" },
+  supported: { label: "지지됨", className: "bg-accent-green-bg text-accent-green-text" },
+  rejected: { label: "기각됨", className: "bg-accent-red-bg text-red-700" },
   inconclusive: { label: "불확실", className: "bg-yellow-100 text-yellow-700" },
 } as const;
 
@@ -47,12 +47,12 @@ export default function HypothesisList({
             onClick={() => onSelect(h.id)}
             className={`w-full rounded-lg border p-4 text-left transition-colors ${
               isSelected
-                ? "border-zinc-900 bg-zinc-50"
-                : "border-zinc-200 bg-white hover:border-zinc-300"
+                ? "border-zinc-900 bg-bg-base"
+                : "border-border-default bg-bg-card hover:border-border-input"
             }`}
           >
             <div className="flex items-start justify-between gap-2">
-              <h3 className="text-sm font-semibold text-zinc-800">
+              <h3 className="text-sm font-semibold text-text-primary">
                 {h.title}
               </h3>
               <span
@@ -66,7 +66,7 @@ export default function HypothesisList({
                 {tags.map((tag) => (
                   <span
                     key={tag}
-                    className="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-500"
+                    className="rounded bg-bg-muted px-2 py-0.5 text-xs text-text-muted"
                   >
                     {tag}
                   </span>

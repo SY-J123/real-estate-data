@@ -10,16 +10,16 @@ interface FilterBarProps {
 
 export default function FilterBar({ filter, onFilterChange }: FilterBarProps) {
   return (
-    <div className="flex flex-wrap items-center gap-4 rounded-lg border border-zinc-200 bg-white p-4">
+    <div className="flex flex-wrap items-center gap-4 rounded-lg border border-border-default bg-bg-card p-4">
       {/* 기간 필터 */}
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium text-zinc-600">기간</span>
+        <span className="text-sm font-medium text-text-tertiary">기간</span>
         <select
           value={filter.months}
           onChange={(e) =>
             onFilterChange({ ...filter, months: Number(e.target.value) })
           }
-          className="rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 outline-none focus:border-zinc-400"
+          className="rounded-md border border-border-default bg-bg-card px-3 py-1.5 text-sm font-medium text-text-secondary outline-none focus:border-border-focus"
         >
           {MONTHS_OPTIONS.map(({ value, label }) => (
             <option key={value} value={value}>
@@ -31,13 +31,13 @@ export default function FilterBar({ filter, onFilterChange }: FilterBarProps) {
 
       {/* 면적 필터 */}
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium text-zinc-600">면적</span>
+        <span className="text-sm font-medium text-text-tertiary">면적</span>
         <select
           value={filter.area}
           onChange={(e) =>
             onFilterChange({ ...filter, area: e.target.value as AreaType })
           }
-          className="rounded-md border border-zinc-200 bg-white px-3 py-1.5 text-sm font-medium text-zinc-700 outline-none focus:border-zinc-400"
+          className="rounded-md border border-border-default bg-bg-card px-3 py-1.5 text-sm font-medium text-text-secondary outline-none focus:border-border-focus"
         >
           {AREA_OPTIONS.map(({ value, label }) => (
             <option key={value} value={value}>
@@ -49,7 +49,7 @@ export default function FilterBar({ filter, onFilterChange }: FilterBarProps) {
 
       {/* 지표 필터 */}
       <div className="flex items-center gap-2">
-        <span className="text-sm font-medium text-zinc-600">지표</span>
+        <span className="text-sm font-medium text-text-tertiary">지표</span>
         <div className="flex gap-1">
           {METRIC_OPTIONS.map(({ value, label }) => (
             <button
@@ -59,8 +59,8 @@ export default function FilterBar({ filter, onFilterChange }: FilterBarProps) {
               }
               className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
                 filter.metric === value
-                  ? "bg-zinc-900 text-white"
-                  : "bg-zinc-100 text-zinc-600 hover:bg-zinc-200"
+                  ? "bg-btn-primary text-text-inverse"
+                  : "bg-bg-muted text-text-tertiary hover:bg-bg-subtle"
               }`}
             >
               {label}

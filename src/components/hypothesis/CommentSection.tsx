@@ -22,9 +22,9 @@ export default function CommentSection({ hypothesisId }: CommentSectionProps) {
   };
 
   return (
-    <div className="mt-6 rounded-lg border border-zinc-200 bg-white p-6">
-      <h3 className="text-sm font-semibold text-zinc-700">
-        댓글 {!isLoading && <span className="font-normal text-zinc-400">{comments?.length ?? 0}</span>}
+    <div className="mt-6 rounded-lg border border-border-default bg-bg-card p-6">
+      <h3 className="text-sm font-semibold text-text-secondary">
+        댓글 {!isLoading && <span className="font-normal text-text-faint">{comments?.length ?? 0}</span>}
       </h3>
 
       <CommentForm onSubmit={handleCreate} />

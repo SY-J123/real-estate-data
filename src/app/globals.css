@@ -1,26 +1,105 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* surfaces */
+  --bg-base: #f9fafb;
+  --bg-card: #ffffff;
+  --bg-muted: #f4f4f5;
+  --bg-subtle: #e4e4e7;
+  --bg-overlay: rgba(0, 0, 0, 0.4);
+
+  /* text */
+  --text-primary: #18181b;
+  --text-secondary: #3f3f46;
+  --text-tertiary: #52525b;
+  --text-muted: #71717a;
+  --text-faint: #a1a1aa;
+  --text-inverse: #ffffff;
+
+  /* borders */
+  --border-default: #e4e4e7;
+  --border-subtle: #f4f4f5;
+  --border-input: #d4d4d8;
+  --border-focus: #a1a1aa;
+
+  /* interactive */
+  --btn-primary: #18181b;
+  --btn-primary-hover: #27272a;
+  --btn-danger: #ef4444;
+  --btn-danger-hover: #dc2626;
+
+  /* accents */
+  --accent-red: #ef4444;
+  --accent-green-bg: #dcfce7;
+  --accent-green-text: #15803d;
+  --accent-red-bg: #fef2f2;
+}
+
+[data-theme="dark"] {
+    --bg-base: #09090b;
+    --bg-card: #18181b;
+    --bg-muted: #27272a;
+    --bg-subtle: #3f3f46;
+    --bg-overlay: rgba(0, 0, 0, 0.6);
+
+    --text-primary: #fafafa;
+    --text-secondary: #d4d4d8;
+    --text-tertiary: #a1a1aa;
+    --text-muted: #71717a;
+    --text-faint: #52525b;
+    --text-inverse: #18181b;
+
+    --border-default: #3f3f46;
+    --border-subtle: #27272a;
+    --border-input: #52525b;
+    --border-focus: #71717a;
+
+    --btn-primary: #fafafa;
+    --btn-primary-hover: #e4e4e7;
+    --btn-danger: #ef4444;
+    --btn-danger-hover: #dc2626;
+
+    --accent-red: #f87171;
+    --accent-green-bg: #052e16;
+    --accent-green-text: #4ade80;
+    --accent-red-bg: #450a0a;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-bg-base: var(--bg-base);
+  --color-bg-card: var(--bg-card);
+  --color-bg-muted: var(--bg-muted);
+  --color-bg-subtle: var(--bg-subtle);
+  --color-bg-overlay: var(--bg-overlay);
+
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-muted: var(--text-muted);
+  --color-text-faint: var(--text-faint);
+  --color-text-inverse: var(--text-inverse);
+
+  --color-border-default: var(--border-default);
+  --color-border-subtle: var(--border-subtle);
+  --color-border-input: var(--border-input);
+  --color-border-focus: var(--border-focus);
+
+  --color-btn-primary: var(--btn-primary);
+  --color-btn-primary-hover: var(--btn-primary-hover);
+  --color-btn-danger: var(--btn-danger);
+  --color-btn-danger-hover: var(--btn-danger-hover);
+
+  --color-accent-red: var(--accent-red);
+  --color-accent-green-bg: var(--accent-green-bg);
+  --color-accent-green-text: var(--accent-green-text);
+  --color-accent-red-bg: var(--accent-red-bg);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--bg-base);
+  color: var(--text-primary);
   font-family: Arial, Helvetica, sans-serif;
 }

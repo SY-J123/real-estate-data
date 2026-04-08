@@ -55,33 +55,33 @@ export default function CommentList({ comments, isLoading, onChanged }: CommentL
     <>
       <div className="mt-5 space-y-3">
         {isLoading ? (
-          <p className="text-xs text-zinc-400">로딩 중...</p>
+          <p className="text-xs text-text-faint">로딩 중...</p>
         ) : comments.length === 0 ? (
-          <p className="text-xs text-zinc-400">아직 댓글이 없습니다.</p>
+          <p className="text-xs text-text-faint">아직 댓글이 없습니다.</p>
         ) : (
           comments.map((c) => (
-            <div key={c.id} className="border-b border-zinc-100 pb-3 last:border-0">
+            <div key={c.id} className="border-b border-border-subtle pb-3 last:border-0">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-zinc-800">{c.nickname}</span>
-                  <span className="text-xs text-zinc-400">{timeAgo(c.created_at)}</span>
+                  <span className="text-sm font-medium text-text-primary">{c.nickname}</span>
+                  <span className="text-xs text-text-faint">{timeAgo(c.created_at)}</span>
                 </div>
                 <div className="flex gap-1">
                   <button
                     onClick={() => openEdit(c)}
-                    className="text-xs text-zinc-400 hover:text-zinc-600"
+                    className="text-xs text-text-faint hover:text-text-tertiary"
                   >
                     수정
                   </button>
                   <button
                     onClick={() => openDelete(c)}
-                    className="text-xs text-zinc-400 hover:text-red-500"
+                    className="text-xs text-text-faint hover:text-accent-red"
                   >
                     삭제
                   </button>
                 </div>
               </div>
-              <p className="mt-1 text-sm text-zinc-600">{c.content}</p>
+              <p className="mt-1 text-sm text-text-tertiary">{c.content}</p>
             </div>
           ))
         )}
@@ -101,7 +101,7 @@ export default function CommentList({ comments, isLoading, onChanged }: CommentL
           placeholder="비밀번호"
           value={actionPassword}
           onChange={(e) => setActionPassword(e.target.value)}
-          className="mt-3 w-full rounded-md border border-zinc-200 px-3 py-1.5 text-sm outline-none focus:border-zinc-400"
+          className="mt-3 w-full rounded-md border border-border-default px-3 py-1.5 text-sm outline-none focus:border-border-focus"
           autoFocus
         />
         {actionTarget?.action === "edit" && (
@@ -110,10 +110,10 @@ export default function CommentList({ comments, isLoading, onChanged }: CommentL
             onChange={(e) => setEditContent(e.target.value)}
             maxLength={500}
             rows={3}
-            className="mt-2 w-full rounded-md border border-zinc-200 px-3 py-1.5 text-sm outline-none focus:border-zinc-400"
+            className="mt-2 w-full rounded-md border border-border-default px-3 py-1.5 text-sm outline-none focus:border-border-focus"
           />
         )}
-        {actionError && <p className="mt-2 text-xs text-red-500">{actionError}</p>}
+        {actionError && <p className="mt-2 text-xs text-accent-red">{actionError}</p>}
       </ConfirmModal>
     </>
   );

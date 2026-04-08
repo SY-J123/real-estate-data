@@ -4,9 +4,9 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANT_CLASSES = {
-  primary: "bg-zinc-900 text-white hover:bg-zinc-800",
-  danger: "bg-red-500 text-white hover:bg-red-600",
-  ghost: "text-zinc-500 hover:bg-zinc-100",
+  primary: "bg-btn-primary text-text-inverse hover:bg-btn-primary-hover",
+  danger: "bg-btn-danger text-text-inverse hover:bg-btn-danger-hover",
+  ghost: "text-text-muted hover:bg-bg-muted",
 } as const;
 
 const SIZE_CLASSES = {
