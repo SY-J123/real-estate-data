@@ -23,17 +23,17 @@ export default function ReportSection() {
   return (
     <Card>
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-zinc-700">
+        <h3 className="text-sm font-semibold text-text-secondary">
           오류 제보
           {(reports?.length ?? 0) > 0 && (
-            <span className="ml-1.5 text-xs font-normal text-zinc-400">
+            <span className="ml-1.5 text-xs font-normal text-text-faint">
               {reports!.length}건
             </span>
           )}
         </h3>
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className="rounded-md bg-zinc-900 px-3 py-1.5 text-xs font-medium text-white hover:bg-zinc-700"
+          className="rounded-md bg-btn-primary px-3 py-1.5 text-xs font-medium text-text-inverse hover:bg-btn-primary-hover"
         >
           {isOpen ? "취소" : "제보하기"}
         </button>

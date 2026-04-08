@@ -46,11 +46,11 @@ export default function ReportForm({ onCreated, onCancel }: ReportFormProps) {
     <form onSubmit={handleSubmit} className="mt-4 space-y-3">
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="mb-1 block text-xs text-zinc-500">구</label>
+          <label className="mb-1 block text-xs text-text-muted">구</label>
           <select
             value={gu}
             onChange={(e) => setGu(e.target.value)}
-            className="w-full rounded border border-zinc-300 px-2.5 py-1.5 text-sm"
+            className="w-full rounded border border-border-input px-2.5 py-1.5 text-sm"
             required
           >
             <option value="">선택</option>
@@ -60,11 +60,11 @@ export default function ReportForm({ onCreated, onCancel }: ReportFormProps) {
           </select>
         </div>
         <div>
-          <label className="mb-1 block text-xs text-zinc-500">유형</label>
+          <label className="mb-1 block text-xs text-text-muted">유형</label>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="w-full rounded border border-zinc-300 px-2.5 py-1.5 text-sm"
+            className="w-full rounded border border-border-input px-2.5 py-1.5 text-sm"
           >
             {CATEGORIES.map((c) => (
               <option key={c.value} value={c.value}>{c.label}</option>
@@ -74,56 +74,56 @@ export default function ReportForm({ onCreated, onCancel }: ReportFormProps) {
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div>
-          <label className="mb-1 block text-xs text-zinc-500">닉네임</label>
+          <label className="mb-1 block text-xs text-text-muted">닉네임</label>
           <input
             type="text"
             value={nickname}
             onChange={(e) => setNickname(e.target.value)}
             maxLength={20}
             placeholder="닉네임"
-            className="w-full rounded border border-zinc-300 px-2.5 py-1.5 text-sm"
+            className="w-full rounded border border-border-input px-2.5 py-1.5 text-sm"
             required
           />
         </div>
         <div>
-          <label className="mb-1 block text-xs text-zinc-500">비밀번호</label>
+          <label className="mb-1 block text-xs text-text-muted">비밀번호</label>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             minLength={4}
             placeholder="4자 이상"
-            className="w-full rounded border border-zinc-300 px-2.5 py-1.5 text-sm"
+            className="w-full rounded border border-border-input px-2.5 py-1.5 text-sm"
             required
           />
         </div>
       </div>
       <div>
-        <label className="mb-1 block text-xs text-zinc-500">내용</label>
+        <label className="mb-1 block text-xs text-text-muted">내용</label>
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           maxLength={500}
           rows={3}
           placeholder="예: 강남구 2026-02 매매 평당가가 실제보다 낮게 표시됩니다"
-          className="w-full resize-none rounded border border-zinc-300 px-2.5 py-1.5 text-sm"
+          className="w-full resize-none rounded border border-border-input px-2.5 py-1.5 text-sm"
           required
         />
-        <p className="mt-0.5 text-right text-xs text-zinc-400">{content.length}/500</p>
+        <p className="mt-0.5 text-right text-xs text-text-faint">{content.length}/500</p>
       </div>
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="text-xs text-accent-red">{error}</p>}
       <div className="flex gap-2">
         <button
           type="submit"
           disabled={isLoading}
-          className="flex-1 rounded-md bg-zinc-900 py-2 text-sm font-medium text-white hover:bg-zinc-700 disabled:opacity-50"
+          className="flex-1 rounded-md bg-btn-primary py-2 text-sm font-medium text-text-inverse hover:bg-btn-primary-hover disabled:opacity-50"
         >
           {isLoading ? "전송 중..." : "제보 등록"}
         </button>
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-md px-4 py-2 text-sm text-zinc-500 hover:bg-zinc-100"
+          className="rounded-md px-4 py-2 text-sm text-text-muted hover:bg-bg-muted"
         >
           취소
         </button>

@@ -44,22 +44,22 @@ export default function ReportList({ reports, onChanged }: ReportListProps) {
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-1.5">
-                <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs font-medium text-zinc-600">
+                <span className="rounded bg-bg-muted px-1.5 py-0.5 text-xs font-medium text-text-tertiary">
                   {r.gu}
                 </span>
-                <span className="rounded bg-zinc-100 px-1.5 py-0.5 text-xs text-zinc-500">
+                <span className="rounded bg-bg-muted px-1.5 py-0.5 text-xs text-text-muted">
                   {CATEGORIES.find((c) => c.value === r.category)?.label ?? r.category}
                 </span>
-                <span className="text-xs text-zinc-400">
+                <span className="text-xs text-text-faint">
                   {r.nickname} &middot; {timeAgo(r.created_at)}
                 </span>
                 {r.status === "resolved" && (
-                  <span className="rounded bg-green-100 px-1.5 py-0.5 text-xs text-green-700">
+                  <span className="rounded bg-accent-green-bg px-1.5 py-0.5 text-xs text-accent-green-text">
                     해결됨
                   </span>
                 )}
               </div>
-              <p className="mt-1 text-sm text-zinc-700">{r.content}</p>
+              <p className="mt-1 text-sm text-text-secondary">{r.content}</p>
             </div>
             <button
               onClick={() => {
@@ -67,7 +67,7 @@ export default function ReportList({ reports, onChanged }: ReportListProps) {
                 setDeletePassword("");
                 setError("");
               }}
-              className="shrink-0 text-xs text-zinc-400 hover:text-red-500"
+              className="shrink-0 text-xs text-text-faint hover:text-accent-red"
             >
               삭제
             </button>
@@ -80,22 +80,22 @@ export default function ReportList({ reports, onChanged }: ReportListProps) {
                 value={deletePassword}
                 onChange={(e) => setDeletePassword(e.target.value)}
                 placeholder="비밀번호"
-                className="w-32 rounded border border-zinc-300 px-2 py-1 text-xs"
+                className="w-32 rounded border border-border-input px-2 py-1 text-xs"
               />
               <button
                 onClick={handleDelete}
-                className="rounded bg-red-500 px-2 py-1 text-xs text-white hover:bg-red-600"
+                className="rounded bg-btn-danger px-2 py-1 text-xs text-text-inverse hover:bg-btn-danger-hover"
               >
                 확인
               </button>
               <button
                 onClick={() => setDeleteTarget(null)}
-                className="text-xs text-zinc-400 hover:text-zinc-600"
+                className="text-xs text-text-faint hover:text-text-tertiary"
               >
                 취소
               </button>
               {error && deleteTarget === r.id && (
-                <span className="text-xs text-red-500">{error}</span>
+                <span className="text-xs text-accent-red">{error}</span>
               )}
             </div>
           )}
