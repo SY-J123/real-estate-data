@@ -1,0 +1,42 @@
+name: 데이터 자동 갱신
+
+on:
+  schedule:
+    # 매일 밤 10시 (KST) = UTC 13:00
+    - cron: "0 13 * * *"
+  workflow_dispatch: # 수동 실행도 가능
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Python 설치
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 의존성 설치
+        run: pip install pandas requests
+
+      - name: 거래 데이터 수집 (국토부 API)
+        env:
+          DATA_GO_KR_SERVICE_KEY: ${{ secrets.DATA_GO_KR_SERVICE_KEY }}
+        run: python scripts/refresh_transactions_from_molit.py
+
+      - name: 대시보드 JSON 빌드
+        run: python scripts/build_dashboard_json.py
+
+      - name: 변경사항 커밋 & 푸시
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/transactions.csv public/data/dashboard.json
+          if git diff --cached --quiet; then
+            echo "변경사항 없음 — 스킵"
+          else
+            git commit -m "chore: 거래 데이터 자동 갱신 $(date +%Y-%m-%d)"
+            git push
+          fi
