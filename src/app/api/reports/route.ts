@@ -1,10 +1,12 @@
 import { type NextRequest } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
-  process.env.SUPABASE_SERVICE_KEY ?? "",
-);
+function getSupabase() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+    process.env.SUPABASE_SERVICE_KEY ?? "",
+  );
+}
 
 // IP 기반 in-memory rate limit
 const ipLog = new Map<string, number[]>();
@@ -31,7 +33,7 @@ setInterval(() => {
 }, 5 * 60 * 1000);
 
 export async function GET() {
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("reports")
     .select("id, gu, category, nickname, content, status, created_at")
     .order("created_at", { ascending: false })
@@ -66,7 +68,7 @@ export async function POST(request: NextRequest) {
     return Response.json({ error: "입력값이 올바르지 않습니다." }, { status: 400 });
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await getSupabase()
     .from("reports")
     .insert({ gu, category, nickname, password, content })
     .select("id, gu, category, nickname, content, status, created_at")
@@ -99,7 +101,7 @@ export async function DELETE(request: NextRequest) {
   }
 
   // 비밀번호 검증 (서버에서 처리 — 클라이언트에 password 노출 안 함)
-  const { data: existing } = await supabase
+  const { data: existing } = await getSupabase()
     .from("reports")
     .select("password")
     .eq("id", reportId)
@@ -112,7 +114,7 @@ export async function DELETE(request: NextRequest) {
     );
   }
 
-  const { error } = await supabase.from("reports").delete().eq("id", reportId);
+  const { error } = await getSupabase().from("reports").delete().eq("id", reportId);
   if (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
